@@ -11,10 +11,13 @@ export function bmi(kg: number, cm: number): { value: number; band: BmiBand } {
   return { value, band };
 }
 
+export const WATER_MAX_ML = 4500;
+
 export function waterGoalMl(settings: Settings, latestKg?: number): number {
   if (settings.waterGoalMl) return settings.waterGoalMl;
   if (!latestKg) return RULES.waterDefaultMl;
-  return Math.round((RULES.waterMlPerKg * latestKg) / RULES.waterRoundMl) * RULES.waterRoundMl;
+  // teto na meta automática: acima disso é recomendação demais pra um app dar sozinho
+  return Math.min(WATER_MAX_ML, Math.round((RULES.waterMlPerKg * latestKg) / RULES.waterRoundMl) * RULES.waterRoundMl);
 }
 
 /** Último peso registrado até o dia (inclusive). */

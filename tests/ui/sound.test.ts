@@ -33,6 +33,22 @@ test('play cria oscilador com som ligado', () => {
   expect(created).toContain('osc');
 });
 
+test('contexto suspenso (app voltou do fundo no iOS) é retomado ao tocar', async () => {
+  vi.resetModules();
+  const resume = vi.fn(() => Promise.resolve());
+  class Suspended {
+    currentTime = 0; state = 'suspended'; destination = {};
+    createOscillator() { return { connect() {}, start() {}, stop() {}, type: '', frequency: { setValueAtTime() {}, exponentialRampToValueAtTime() {} } }; }
+    createGain() { return { connect() {}, gain: { setValueAtTime() {}, linearRampToValueAtTime() {}, exponentialRampToValueAtTime() {} } }; }
+    resume = resume;
+  }
+  vi.stubGlobal('AudioContext', Suspended);
+  const fresh = await import('../../src/ui/sound');
+  fresh.setSoundEnabled(true);
+  fresh.play('check');
+  expect(resume).toHaveBeenCalled();
+});
+
 test('sem AudioContext não quebra', () => {
   vi.stubGlobal('AudioContext', undefined);
   setSoundEnabled(true);

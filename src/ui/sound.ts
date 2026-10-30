@@ -47,6 +47,7 @@ export function play(name: SoundName) {
   if (!enabled) return;
   const a = audio();
   if (!a) return;
+  if (a.state !== 'running') void a.resume(); // o iOS suspende o áudio quando o app vai pro fundo
   const t = a.currentTime + 0.01;
   if (name === 'check') { tone(a, 1320, t, 0.07, { type: 'triangle', vol: VOL * 0.8 }); tone(a, 1980, t + 0.045, 0.09, { type: 'triangle', vol: VOL * 0.6 }); }
   if (name === 'drop') tone(a, 880, t, 0.28, { to: 340, vol: VOL * 0.9 });

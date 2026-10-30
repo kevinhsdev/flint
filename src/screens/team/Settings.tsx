@@ -114,7 +114,7 @@ export default function Settings() {
         <p className="muted">O backup substitui os dados deste aparelho: treinos, água e peso. Fotos só são trocadas se o backup tiver fotos.</p>
         <div className="row-2">
           <button className="btn ghost" onClick={() => setPending(null)}>Cancelar</button>
-          <button className="btn" onClick={async () => { const r = await importBackup(pending!); setPending(null); setMsg(r.ok ? 'Backup restaurado.' : r.error); }}>Substituir</button>
+          <button className="btn" onClick={async () => { const r = await importBackup(pending!); setPending(null); setMsg(r.ok ? 'Backup restaurado.' : r.error); if (r.ok) setSoundEnabled((await getSettings()).sound); }}>Substituir</button>
         </div>
       </Sheet>
 

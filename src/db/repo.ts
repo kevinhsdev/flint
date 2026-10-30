@@ -84,7 +84,9 @@ export async function boot(): Promise<'survey' | 'ready'> {
   const row = await db.kv.get('settings');
   if (!row) return 'survey';
   const s = await getSettings();
-  return s.onboarded || s.demo || (await db.sessions.count()) > 0 ? 'ready' : 'survey';
+  if (s.onboarded || s.demo || (await db.sessions.count()) > 0) return 'ready';
+  // backup antigo com rotina montada e sem histórico também já tem dados
+  return (await db.templates.toArray()).some(t => !t.archived) ? 'ready' : 'survey';
 }
 
 /** "Só quero explorar": dados de exemplo da fase 1. */

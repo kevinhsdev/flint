@@ -1,5 +1,5 @@
 import { lazy, useEffect, useState } from 'react';
-import { HashRouter, Route, Routes } from 'react-router';
+import { HashRouter, Route, Routes, useNavigate } from 'react-router';
 import { boot, getSettings } from './db/repo';
 import { setSoundEnabled } from './ui/sound';
 import { LoadingScreen } from './ui/LoadingScreen';
@@ -21,7 +21,10 @@ import YourPlan from './screens/welcome/YourPlan';
 
 const Dev = import.meta.env.DEV ? lazy(() => import('./screens/Dev')) : null;
 
-export function Shell() {
+export function Shell({ survey = false }: { survey?: boolean }) {
+  const nav = useNavigate();
+  // primeira abertura: a pesquisa, decidida pelo boot antes de o app aparecer
+  useEffect(() => { if (survey) nav('/bem-vindo', { replace: true }); }, [survey, nav]);
   return (
     <div className="app">
       <Routes>
@@ -49,10 +52,11 @@ const MIN_LOADING_MS = 700;
 
 export default function App() {
   const [phase, setPhase] = useState<'loading' | 'leaving' | 'ready'>('loading');
+  const [survey, setSurvey] = useState(false);
   useEffect(() => {
     // o carregamento fica pelo menos um instante, pra não piscar
     Promise.all([boot(), new Promise(r => setTimeout(r, MIN_LOADING_MS))]).then(([next]) => {
-      if (next === 'survey') window.location.hash = '#/bem-vindo';
+      setSurvey(next === 'survey');
       void getSettings().then(s => setSoundEnabled(s.sound));
       setPhase('leaving');
       setTimeout(() => setPhase('ready'), 260);
@@ -61,7 +65,7 @@ export default function App() {
   return (
     <HashRouter>
       {phase !== 'ready' && <LoadingScreen leaving={phase === 'leaving'} />}
-      {phase !== 'loading' && <ErrorBoundary><Shell /></ErrorBoundary>}
+      {phase !== 'loading' && <ErrorBoundary><Shell survey={survey} /></ErrorBoundary>}
     </HashRouter>
   );
 }

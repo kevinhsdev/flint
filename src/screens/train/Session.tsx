@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { db } from '../../db/db';
 import { discardSession, finishSession, getActiveSession, getSettings, startSession, updateSession } from '../../db/repo';
@@ -6,7 +6,7 @@ import { computeXP, type GameData } from '../../domain/gamification';
 import { lastEntryFor } from '../../domain/routine';
 import { plateau } from '../../domain/plateau';
 import { findPRs, isWork, suggestOverload, type PR } from '../../domain/strength';
-import { warmupSets } from '../../domain/warmup';
+import { deloadKg, warmupSets } from '../../domain/warmup';
 import type { Exercise, Session, SetLog, Template, TemplateItem } from '../../domain/types';
 import type { StageId } from '../../domain/rules';
 import { Mascot } from '../../mascots/Mascot';
@@ -18,7 +18,7 @@ import { Sheet } from '../../ui/Sheet';
 import { ExercisePicker } from './ExercisePicker';
 import { PlateCalc } from './PlateCalc';
 import { RestTimer } from './RestTimer';
-import { sharePR, Summary } from './Summary';
+import { Summary, usePRCards } from './Summary';
 
 const FREE_ITEM = { sets: 3, repMin: 8, repMax: 12, restSec: 90 };
 
@@ -77,6 +77,9 @@ export default function SessionScreen() {
   }, [nav, params, open]);
 
   const endRest = useCallback(() => setRest(null), []);
+  // estágio de antes da sessão: basta pro cartão do recorde, sem recalcular XP a cada série
+  const stage = useMemo(() => (ctx ? computeXP({ ...ctx.game, sessions: ctx.history }, new Date()).stage : 'faisca'), [ctx]);
+  const sharePR = usePRCards(s && ctx && s.endedAt === null ? sessionPRs(s, ctx.history) : [], id => ctx?.lib.get(id)?.name ?? 'Exercício', stage);
 
   if (summary && ctx) return <Summary {...summary} lib={ctx.game.library} onDone={() => nav('/treino')} />;
   if (conflict && !s) return (
@@ -110,9 +113,11 @@ export default function SessionScreen() {
   };
   const warmUp = (ei: number) => update(x => { x.entries[ei].sets.unshift(...warmupSets(workKg(ei), ctx.lib.get(x.entries[ei].exerciseId)!.equipment)); });
   const deload = (ei: number) => update(x => {
-    const step = ctx.lib.get(x.entries[ei].exerciseId)?.equipment === 'dumbbell' ? 2 : 2.5;
-    for (const set of x.entries[ei].sets) if (!set.done && !set.warmup) set.kg = Math.round((set.kg * 0.9) / step) * step;
+    const eq = ctx.lib.get(x.entries[ei].exerciseId)?.equipment ?? 'machine';
+    for (const set of x.entries[ei].sets) if (!set.done && !set.warmup && set.kg > 0) set.kg = deloadKg(set.kg, eq);
   });
+  // aquecimento oferecido no primeiro composto (mais músculos secundários), não no primeiro da lista
+  const warmAt = [2, 1, 0].map(k => s.entries.findIndex((e, i) => (ctx.lib.get(e.exerciseId)?.secondary.length ?? 0) >= k && canWarm(i))).find(i => i >= 0) ?? -1;
 
   function toggle(ei: number, si: number) {
     const e = s!.entries[ei], set = e.sets[si];
@@ -178,7 +183,7 @@ export default function SessionScreen() {
               <button className="icon-btn" aria-label={`Opções de ${ex?.name ?? 'exercício'}`} onClick={() => setExMenu(ei)}><Icon name="more" /></button>
             </div>
             {tip && <p className="tip"><b>Pedra:</b> {tip.text}</p>}
-            {ei === 0 && !editing && canWarm(ei) && <button className="warm-btn" onClick={() => warmUp(ei)}>Aquecer</button>}
+            {ei === warmAt && !editing && <button className="warm-btn" onClick={() => warmUp(ei)}>Aquecer</button>}
             <div className="sets" role="table">
               <div className="set-row head" role="row"><span>#</span><span>Última</span><span>kg</span><span>Reps</span><span /></div>
               {e.sets.map((x, si) => {
@@ -199,7 +204,7 @@ export default function SessionScreen() {
               })}
             </div>
             {!editing && prs.filter(p => p.exerciseId === e.exerciseId).slice(-1).map(p => (
-              <button key="pr" className="share-pr-chip" onClick={() => sharePR(p, ex?.name ?? 'Exercício', computeXP({ ...ctx.game, sessions: [...ctx.history, s] }, now).stage)}>
+              <button key="pr" className="share-pr-chip" onClick={() => sharePR(p)}>
                 <Icon name="share" /> Compartilhar recorde
               </button>
             ))}

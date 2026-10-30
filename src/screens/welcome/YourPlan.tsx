@@ -85,7 +85,7 @@ export default function YourPlan() {
               <Glass ml={glassMl} goal={goal} size="sm" />
               <Mascot kind="gota" size={84} act={GOTA_ACT} />
             </div>
-            <p className="yp-text">35 ml por kg do seu peso. A Gota lembra você ao longo do dia, e a meta se ajusta quando o peso muda.</p>
+            <p className="yp-text">35 ml por kg do seu peso, até 4,5 L. A Gota lembra você ao longo do dia, e a meta se ajusta quando o peso muda.</p>
           </>
         )}
 

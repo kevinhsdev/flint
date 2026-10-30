@@ -69,17 +69,19 @@ export function generatePlan(p: Profile, lib: Exercise[]): Template[] {
   const gentle = p.level === 'iniciante' || p.age >= 50;
   const byId = new Map(lib.filter(e => !e.archived && allowed.has(e.equipment)).map(e => [e.id, e]));
   const candidates = (m: Muscle) => {
-    const xs = PREF[m].map(id => byId.get(id)).filter((e): e is Exercise => !!e);
-    for (const e of byId.values()) if (e.primary === m && !xs.includes(e)) xs.push(e); // exercícios próprios no fim
+    // iniciantes e 50+: levantamentos técnicos ficam de fora de vez, não só da 1ª posição
+    const xs = PREF[m].map(id => byId.get(id)).filter((e): e is Exercise => !!e && !(gentle && NOT_FIRST.has(e.id)));
+    for (const e of byId.values()) if (e.primary === m && !xs.includes(e) && !(gentle && NOT_FIRST.has(e.id))) xs.push(e); // exercícios próprios no fim
     return gentle ? xs.map((e, i) => [e, i] as const).sort((a, b) => GENTLE_RANK[a[0].equipment] - GENTLE_RANK[b[0].equipment] || a[1] - b[1]).map(x => x[0]) : xs;
   };
   const { reps, restSec } = DOSE[p.goal];
   const n = COUNT[p.minutes];
   const { days } = split(p);
-  // dias repetidos (PPL ×2) usam a 2ª opção de cada músculo para variar
-  const seen = new Map<string, number>();
-  return days.map(([label, slots], order) => {
-    const round = seen.get(label) ?? 0; seen.set(label, round + 1);
+  // dias repetidos (o mesmo dia de novo, como no PPL ×2) usam a 2ª opção de cada músculo para variar
+  const seen = new Map<Day, number>();
+  return days.map((day, order) => {
+    const [label, slots] = day;
+    const round = seen.get(day) ?? 0; seen.set(day, round + 1);
     const ids: string[] = [];
     // percorre os slots; se faltar candidato, segue para os próximos músculos do mesmo dia (dando a volta)
     for (let i = 0; ids.length < n && i < slots.length * 3; i++) {

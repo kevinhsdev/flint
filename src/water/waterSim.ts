@@ -41,12 +41,12 @@ export function createWaterSim(cv: HTMLCanvasElement, initial: number): WaterSim
     const top = H * (1 - level);
 
     // camada de trás (profundidade, levemente fora de fase)
-    path(2.2); ctx!.fillStyle = 'rgba(40,90,210,.45)'; ctx!.fill();
+    path(2.2); ctx!.fillStyle = 'rgba(14,130,200,.45)'; ctx!.fill();
 
     // corpo
     path(0);
     const g = ctx!.createLinearGradient(0, top - 6, 0, H);
-    g.addColorStop(0, '#6FA8FF'); g.addColorStop(.25, '#3B82F6'); g.addColorStop(1, '#13306F');
+    g.addColorStop(0, '#7FE3F5'); g.addColorStop(.25, '#14B8E6'); g.addColorStop(1, '#0A3D78');
     ctx!.fillStyle = g; ctx!.fill();
 
     ctx!.save(); ctx!.clip();

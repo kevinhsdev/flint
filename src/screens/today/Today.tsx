@@ -130,7 +130,7 @@ export default function Today() {
       )}
 
       <div className="pair">
-        <WaterCard ml={ml} goal={goal} onAdd={n => logWater(n)} onUndo={() => undoLastWater(localDay(new Date()))}
+        <WaterCard ml={ml} goal={goal} onAdd={n => logWater(n)} onUndo={() => undoLastWater(localDay(new Date()))} onOpen={() => nav('/agua')}
           badge={<Mascot kind="gota" size={40} mood={gotaMood} interactive={false} />} />
         <button className="tile weight" onClick={() => { setKg(lastW?.kg ?? null); setWeighing(true); }} aria-label="Registrar peso">
           <div className="k">Peso {delta !== null && <span className={`num ${delta <= 0 ? 'down' : 'up'}`}>{delta > 0 ? '+' : delta < 0 ? '−' : ''}{fmtNum(Math.abs(Math.round(delta * 10) / 10))} kg</span>}</div>

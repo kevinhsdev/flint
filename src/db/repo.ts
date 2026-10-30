@@ -52,6 +52,8 @@ export async function logWater(ml: number, at = new Date()) {
   await db.water.add({ id: uid(), day: localDay(at), at: at.getTime(), ml });
 }
 
+export const deleteWater = (id: string) => db.water.delete(id);
+
 export async function undoLastWater(day: string) {
   const last = (await db.water.where('day').equals(day).sortBy('at')).at(-1);
   if (last) await db.water.delete(last.id);

@@ -13,6 +13,7 @@ import Progress from './screens/progress/Progress';
 import ExerciseScreen from './screens/progress/ExerciseChart';
 import Team from './screens/team/Team';
 import Settings from './screens/team/Settings';
+import Water from './screens/water/Water';
 
 const Dev = import.meta.env.DEV ? lazy(() => import('./screens/Dev')) : null;
 
@@ -25,6 +26,7 @@ export function Shell() {
         <Route path="/treino/editar/:id" element={<TemplateEditor />} />
         <Route path="/treino/sessao" element={<SessionScreen />} />
         <Route path="/treino/historico" element={<History />} />
+        <Route path="/agua" element={<Water />} />
         <Route path="/progresso" element={<Progress />} />
         <Route path="/progresso/exercicio/:id" element={<ExerciseScreen />} />
         <Route path="/time" element={<Team />} />

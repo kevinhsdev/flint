@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
-import { archiveTemplate, duplicateTemplate, reorderTemplates } from '../../db/repo';
+import { archiveTemplate, duplicateTemplate, getActiveSession, reorderTemplates } from '../../db/repo';
 import { nextTemplate } from '../../domain/routine';
 import { MUSCLE_NAMES } from '../../domain/exercises';
 import type { Exercise, Template } from '../../domain/types';
@@ -24,6 +24,7 @@ export default function Routine() {
     templates: (await db.templates.orderBy('order').toArray()).filter(t => !t.archived),
     sessions: await db.sessions.toArray(),
     ex: new Map((await db.exercises.toArray()).map(e => [e.id, e])),
+    active: await getActiveSession(),
   }), []);
   const [menu, setMenu] = useState<Template | null>(null);
   const [confirm, setConfirm] = useState(false);
@@ -39,6 +40,12 @@ export default function Routine() {
         <h1 className="title">Treino</h1>
         <Link to="/treino/historico" className="link">Histórico <Icon name="chev" /></Link>
       </header>
+
+      {data.active && (
+        <Link to="/treino/sessao" className="live-banner">
+          <span className="dot" /><span><b>Treino em andamento</b><small>{data.active.name}</small></span><span className="go">Continuar</span>
+        </Link>
+      )}
 
       {rows.length === 0 ? (
         <Empty text="Bora montar sua primeira rotina?">

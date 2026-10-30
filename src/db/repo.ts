@@ -3,7 +3,9 @@ import { EXERCISES } from '../domain/exercises';
 import { localDay } from '../domain/dates';
 import { DEFAULT_SETTINGS } from '../domain/settings';
 import { makeSeed } from '../domain/seed';
-import type { Exercise, Settings, Template } from '../domain/types';
+import { lastEntryFor } from '../domain/routine';
+import { suggestOverload } from '../domain/strength';
+import type { Entry, Exercise, Session, Settings, Template } from '../domain/types';
 
 export const uid = () => crypto.randomUUID();
 
@@ -87,4 +89,47 @@ export async function startFresh() {
 
 export async function wipeAll() {
   await db.transaction('rw', db.tables, () => Promise.all(db.tables.map(t => t.clear())));
+}
+
+/* ---------- sessão em andamento ---------- */
+const ACTIVE = 'activeSessionId';
+
+/** Cria a sessão a partir do template (ou livre), com a carga sugerida já preenchida. */
+export async function startSession(templateId: string | null): Promise<string> {
+  const t = templateId ? await db.templates.get(templateId) : undefined;
+  const history = await db.sessions.toArray();
+  const entries: Entry[] = [];
+  for (const item of t?.items ?? []) {
+    const ex = await db.exercises.get(item.exerciseId);
+    const last = lastEntryFor(item.exerciseId, history);
+    const kg = (ex && suggestOverload(item, last, ex.equipment)?.kg) ?? 0;
+    entries.push({ exerciseId: item.exerciseId, sets: Array.from({ length: item.sets }, () => ({ kg, reps: 0, done: false })) });
+  }
+  const s: Session = { id: uid(), templateId: t?.id ?? null, name: t?.name ?? 'Treino livre', startedAt: Date.now(), endedAt: null, entries };
+  await db.transaction('rw', db.sessions, db.kv, async () => {
+    await db.sessions.add(s);
+    await db.kv.put({ key: ACTIVE, value: s.id });
+  });
+  return s.id;
+}
+
+export const updateSession = (s: Session) => db.sessions.put(s);
+
+export async function getActiveSession(): Promise<Session | undefined> {
+  const id = (await db.kv.get(ACTIVE))?.value as string | undefined;
+  return id ? db.sessions.get(id) : undefined;
+}
+
+export async function finishSession(id: string) {
+  await db.transaction('rw', db.sessions, db.kv, async () => {
+    await db.sessions.update(id, { endedAt: Date.now() });
+    await db.kv.delete(ACTIVE);
+  });
+}
+
+export async function discardSession(id: string) {
+  await db.transaction('rw', db.sessions, db.kv, async () => {
+    await db.sessions.delete(id);
+    await db.kv.delete(ACTIVE);
+  });
 }

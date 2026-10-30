@@ -1,23 +1,12 @@
-import { useState } from 'react';
-import { startFresh } from '../db/repo';
-import { Sheet } from './Sheet';
+import { useNavigate } from 'react-router';
 
-/** Aviso do modo demo: o app abre cheio de exemplo; daqui a pessoa começa o dela. */
+/** Aviso do modo demo: o app abre cheio de exemplo; daqui a pessoa monta o plano dela (a pesquisa apaga o exemplo). */
 export function DemoBanner() {
-  const [open, setOpen] = useState(false);
+  const nav = useNavigate();
   return (
-    <>
-      <div className="demo">
-        <span>Dados de exemplo</span>
-        <button onClick={() => setOpen(true)}>Começar do zero</button>
-      </div>
-      <Sheet open={open} onClose={() => setOpen(false)} title="Começar do zero?">
-        <p className="muted">Os treinos, a água e o peso de exemplo serão apagados. A biblioteca de exercícios continua.</p>
-        <div className="row-2">
-          <button className="btn ghost" onClick={() => setOpen(false)}>Cancelar</button>
-          <button className="btn" onClick={async () => { await startFresh(); setOpen(false); }}>Apagar tudo</button>
-        </div>
-      </Sheet>
-    </>
+    <div className="demo">
+      <span>Dados de exemplo</span>
+      <button onClick={() => nav('/bem-vindo')}>Montar meu plano</button>
+    </div>
   );
 }

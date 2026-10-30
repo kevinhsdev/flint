@@ -3,12 +3,12 @@ import { createWaterSim, type WaterSim } from './waterSim';
 import { Sheet } from '../ui/Sheet';
 import { Icon } from '../ui/Icon';
 
-interface Props { ml: number; goal: number; onAdd(ml: number): void; onUndo(): void; badge?: ReactNode }
+interface Props { ml: number; goal: number; onAdd(ml: number): void; onUndo(): void; badge?: ReactNode; onOpen?(): void }
 
 const liters = (ml: number) => (ml / 1000).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 });
 const LONG_PRESS = 450;
 
-export function WaterCard({ ml, goal, onAdd, onUndo, badge }: Props) {
+export function WaterCard({ ml, goal, onAdd, onUndo, badge, onOpen }: Props) {
   const cv = useRef<HTMLCanvasElement>(null);
   const sim = useRef<WaterSim>(null);
   const timer = useRef(0), held = useRef(false);
@@ -59,6 +59,7 @@ export function WaterCard({ ml, goal, onAdd, onUndo, badge }: Props) {
           <button className="btn" disabled={!(customMl > 0 && customMl <= 3000)}>Adicionar</button>
         </form>
         <button className="btn ghost" disabled={ml === 0} onClick={() => { setOpen(false); onUndo(); }}>Desfazer</button>
+        {onOpen && <button className="btn ghost" onClick={() => { setOpen(false); onOpen(); }}>Ver meu dia de água</button>}
       </Sheet>
     </>
   );

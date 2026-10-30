@@ -1,12 +1,12 @@
 import { db } from '../../src/db/db';
-import { addPhoto, boot, getSettings, wipeAll } from '../../src/db/repo';
+import { addPhoto, loadDemo, getSettings, wipeAll } from '../../src/db/repo';
 import { exportBackup, importBackup } from '../../src/domain/backup';
 
 vi.setConfig({ testTimeout: 30_000 });
 
 const counts = async () => Object.fromEntries(await Promise.all(db.tables.map(async t => [t.name, await t.count()])));
 
-beforeEach(async () => { await wipeAll(); await boot(); });
+beforeEach(async () => { await wipeAll(); await loadDemo(); });
 
 test('export → import restaura igual', async () => {
   await addPhoto(new Blob([new Uint8Array([1, 2, 3])], { type: 'image/jpeg' }), '2026-10-01');
@@ -24,7 +24,7 @@ test('sem fotos, o backup não leva fotos', async () => {
   await addPhoto(new Blob([new Uint8Array([9])]), '2026-10-01');
   const json = JSON.parse(await (await exportBackup(false)).text());
   expect(json.app).toBe('flint');
-  expect(json.version).toBe(1);
+  expect(json.version).toBe(2);
   expect(json.data.photos).toEqual([]);
 });
 
@@ -37,7 +37,7 @@ test('import inválido não apaga nada', async () => {
 });
 
 test('import de versão futura é recusado', async () => {
-  const r = await importBackup(new Blob([JSON.stringify({ app: 'flint', version: 2, data: {} })]));
+  const r = await importBackup(new Blob([JSON.stringify({ app: 'flint', version: 3, data: {} })]));
   expect(r.ok).toBe(false);
   expect(!r.ok && r.error).toMatch(/versão mais nova/);
 });

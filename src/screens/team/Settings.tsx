@@ -10,18 +10,10 @@ import { APP_NAME, REPO_URL, VERSION } from '../../brand';
 import { Icon } from '../../ui/Icon';
 import { fmtNum, NumberField } from '../../ui/NumberField';
 import { Sheet } from '../../ui/Sheet';
+import { shareFile } from '../../share/share';
+import { play, setSoundEnabled } from '../../ui/sound';
 
 const DAYS: [number, string][] = [[1, 'Seg'], [2, 'Ter'], [3, 'Qua'], [4, 'Qui'], [5, 'Sex'], [6, 'Sáb'], [0, 'Dom']];
-
-async function shareOrDownload(blob: Blob, name: string) {
-  const file = new File([blob], name, { type: 'application/json' });
-  if (navigator.canShare?.({ files: [file] })) {
-    try { await navigator.share({ files: [file], title: `Backup do ${APP_NAME}` }); return; } catch (e) { if ((e as Error).name === 'AbortError') return; }
-  }
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob); a.download = name; a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-}
 
 export default function Settings() {
   const nav = useNavigate();
@@ -29,6 +21,7 @@ export default function Settings() {
   const [photos, setPhotos] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [reset, setReset] = useState(false);
+  const [redo, setRedo] = useState(false);
   const [pending, setPending] = useState<File | null>(null);
   if (!d) return <main className="screen" />;
   const { s } = d;
@@ -74,6 +67,15 @@ export default function Settings() {
         <label className="field"><span>Horário</span>
           <input type="time" value={s.trainTime} onChange={e => e.target.value && saveSettings({ trainTime: e.target.value })} />
         </label>
+        <button className="btn ghost" onClick={() => setRedo(true)}>Refazer pesquisa</button>
+      </section>
+
+      <section className="card">
+        <div className="switch-row">
+          <div><h2>Sons</h2><p className="muted">Série feita, recorde, água e fim de treino.</p></div>
+          <button className="switch" role="switch" aria-checked={s.sound} aria-label="Sons"
+            onClick={() => { setSoundEnabled(!s.sound); void saveSettings({ sound: !s.sound }); if (!s.sound) play('check'); }} />
+        </div>
       </section>
 
       <section className="card">
@@ -86,7 +88,7 @@ export default function Settings() {
         <p className="muted">Seus dados ficam só neste aparelho. Exporte de vez em quando pra não perder nada.</p>
         <label className="check-row"><input type="checkbox" checked={photos} onChange={e => setPhotos(e.target.checked)} /> Incluir fotos (arquivo maior)</label>
         <div className="row-2">
-          <button className="btn ghost" onClick={async () => shareOrDownload(await exportBackup(photos), `flint-backup-${localDay(new Date())}.json`)}>Exportar</button>
+          <button className="btn ghost" onClick={async () => shareFile(await exportBackup(photos), `flint-backup-${localDay(new Date())}.json`, `Backup do ${APP_NAME}`)}>Exportar</button>
           <label className="btn ghost file-pick">Importar
             <input type="file" accept="application/json,.json" hidden onChange={async e => {
               const f = e.target.files?.[0]; e.target.value = '';
@@ -112,7 +114,15 @@ export default function Settings() {
         <p className="muted">O backup substitui os dados deste aparelho: treinos, água e peso. Fotos só são trocadas se o backup tiver fotos.</p>
         <div className="row-2">
           <button className="btn ghost" onClick={() => setPending(null)}>Cancelar</button>
-          <button className="btn" onClick={async () => { const r = await importBackup(pending!); setPending(null); setMsg(r.ok ? 'Backup restaurado.' : r.error); }}>Substituir</button>
+          <button className="btn" onClick={async () => { const r = await importBackup(pending!); setPending(null); setMsg(r.ok ? 'Backup restaurado.' : r.error); if (r.ok) setSoundEnabled((await getSettings()).sound); }}>Substituir</button>
+        </div>
+      </Sheet>
+
+      <Sheet open={redo} onClose={() => setRedo(false)} title="Refazer a pesquisa?">
+        <p className="muted">Seus treinos atuais serão arquivados; o histórico continua. No fim você escolhe entre gerar um plano novo ou manter sua rotina.</p>
+        <div className="row-2">
+          <button className="btn ghost" onClick={() => setRedo(false)}>Cancelar</button>
+          <button className="btn" onClick={() => nav('/bem-vindo?refazer=1')}>Começar</button>
         </div>
       </Sheet>
 
@@ -120,7 +130,7 @@ export default function Settings() {
         <p className="muted">Treinos, água, peso e fotos serão apagados deste aparelho. A biblioteca de exercícios continua.</p>
         <div className="row-2">
           <button className="btn ghost" onClick={() => setReset(false)}>Cancelar</button>
-          <button className="btn" onClick={async () => { await startFresh(); setReset(false); nav('/'); }}>Apagar tudo</button>
+          <button className="btn" onClick={async () => { await startFresh(); setReset(false); nav('/bem-vindo'); }}>Apagar tudo</button>
         </div>
       </Sheet>
     </main>

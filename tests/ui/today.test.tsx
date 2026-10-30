@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../../src/App';
-import { boot, startFresh, wipeAll } from '../../src/db/repo';
+import { loadDemo, saveSettings, startFresh, wipeAll } from '../../src/db/repo';
 import { db } from '../../src/db/db';
 import { coachLine } from '../../src/screens/today/Today';
 
@@ -9,19 +9,17 @@ vi.setConfig({ testTimeout: 30_000 }); // o boot com dados de exemplo é lento c
 
 beforeEach(() => { location.hash = '#/'; });
 
-test('primeira abertura mostra demo e "Começar do zero" zera', async () => {
-  await wipeAll(); await boot(); // semeia antes, como a primeira abertura; o boot do App vira no-op
+test('demo mostra o aviso e "Montar meu plano" abre a pesquisa', async () => {
+  await wipeAll(); await loadDemo();
   const user = userEvent.setup();
   render(<App />);
   expect(await screen.findByText(/Dados de exemplo/, {}, { timeout: 15000 })).toBeInTheDocument();
-  await user.click(screen.getByRole('button', { name: 'Começar do zero' }));
-  await user.click(screen.getByRole('button', { name: 'Apagar tudo' }));
-  expect(await screen.findByText('Bora montar sua primeira rotina?')).toBeInTheDocument();
-  expect(screen.queryByText(/Dados de exemplo/)).toBeNull();
+  await user.click(screen.getByRole('button', { name: 'Montar meu plano' }));
+  expect(await screen.findByText(/Qual é o seu objetivo/)).toBeInTheDocument();
 });
 
 test('tocar no card de água soma 250 ml', async () => {
-  await startFresh();
+  await startFresh(); await saveSettings({ onboarded: true });
   const user = userEvent.setup();
   render(<App />);
   const card = await screen.findByRole('button', { name: /^Água/ }, { timeout: 15000 });

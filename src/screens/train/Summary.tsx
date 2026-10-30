@@ -1,15 +1,45 @@
+import { useEffect, useRef, useState } from 'react';
 import { MUSCLE_NAMES } from '../../domain/exercises';
 import { sessionStats } from '../../domain/progress';
 import type { PR } from '../../domain/strength';
 import type { Exercise, Session } from '../../domain/types';
+import type { StageId } from '../../domain/rules';
 import { Mascot } from '../../mascots/Mascot';
+import { prCard } from '../../share/cards';
+import { shareImage } from '../../share/share';
+import { Icon } from '../../ui/Icon';
 import { fmtNum } from '../../ui/NumberField';
 
 const CHEER = { name: 'comemorar', key: 1 } as const;
 
-export function Summary({ session, lib, prs, xp, onDone }: { session: Session; lib: Exercise[]; prs: PR[]; xp: number; onDone(): void }) {
+const prKey = (p: PR) => `${p.exerciseId}:${p.kind}:${p.kg}:${p.reps}`;
+
+/**
+ * Cartões dos recordes gerados assim que aparecem: no iOS o compartilhar só abre se for chamado
+ * logo no toque, sem esperar o canvas. Devolve a função que compartilha.
+ */
+export function usePRCards(prs: PR[], name: (exerciseId: string) => string, stage: StageId) {
+  const [cards, setCards] = useState<Record<string, Blob>>({});
+  const started = useRef(new Set<string>());
+  const sig = prs.map(prKey).join('|');
+  useEffect(() => {
+    for (const p of prs) {
+      const k = prKey(p);
+      if (started.current.has(k)) continue;
+      started.current.add(k);
+      prCard(p, name(p.exerciseId), stage).then(b => setCards(c => ({ ...c, [k]: b }))).catch(() => started.current.delete(k));
+    }
+  }, [sig, stage]); // eslint-disable-line react-hooks/exhaustive-deps -- `prs` muda de identidade a cada render
+  return async (p: PR) => {
+    const blob = cards[prKey(p)] ?? await prCard(p, name(p.exerciseId), stage).catch(() => null);
+    if (blob) await shareImage(blob, `flint-recorde-${p.exerciseId}.png`);
+  };
+}
+
+export function Summary({ session, lib, prs, xp, stage, onDone }: { session: Session; lib: Exercise[]; prs: PR[]; xp: number; stage: StageId; onDone(): void }) {
   const st = sessionStats(session, lib);
   const name = (id: string) => lib.find(e => e.id === id)?.name ?? id;
+  const sharePR = usePRCards(prs, name, stage);
   return (
     <main className="screen summary">
       <div className="cheer">
@@ -27,7 +57,12 @@ export function Summary({ session, lib, prs, xp, onDone }: { session: Session; l
       {prs.length > 0 && (
         <section className="prs">
           <h2>{prs.length === 1 ? 'Novo recorde' : `${prs.length} novos recordes`}</h2>
-          <ul>{prs.map((p, i) => <li key={i}><b>{name(p.exerciseId)}</b><span className="num">{fmtNum(p.kg)} kg × {p.reps}</span></li>)}</ul>
+          <ul>{prs.map((p, i) => (
+            <li key={i}>
+              <b>{name(p.exerciseId)}</b><span className="num">{fmtNum(p.kg)} kg × {p.reps}</span>
+              <button className="icon-btn share-pr" aria-label={`Compartilhar recorde de ${name(p.exerciseId)}`} onClick={() => sharePR(p)}><Icon name="share" /></button>
+            </li>
+          ))}</ul>
         </section>
       )}
       {st.muscles.length > 0 && <p className="muted">Músculos: {st.muscles.map(m => MUSCLE_NAMES[m]).join(', ')}</p>}

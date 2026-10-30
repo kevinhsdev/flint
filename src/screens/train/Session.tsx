@@ -1,20 +1,24 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { db } from '../../db/db';
 import { discardSession, finishSession, getActiveSession, getSettings, startSession, updateSession } from '../../db/repo';
 import { computeXP, type GameData } from '../../domain/gamification';
 import { lastEntryFor } from '../../domain/routine';
-import { findPRs, suggestOverload, type PR } from '../../domain/strength';
+import { plateau } from '../../domain/plateau';
+import { findPRs, isWork, suggestOverload, type PR } from '../../domain/strength';
+import { deloadKg, warmupSets } from '../../domain/warmup';
 import type { Exercise, Session, SetLog, Template, TemplateItem } from '../../domain/types';
+import type { StageId } from '../../domain/rules';
 import { Mascot } from '../../mascots/Mascot';
 import type { MascotAct } from '../../mascots/engine';
 import { Icon } from '../../ui/Icon';
+import { play } from '../../ui/sound';
 import { fmtNum, NumberField } from '../../ui/NumberField';
 import { Sheet } from '../../ui/Sheet';
 import { ExercisePicker } from './ExercisePicker';
 import { PlateCalc } from './PlateCalc';
 import { RestTimer } from './RestTimer';
-import { Summary } from './Summary';
+import { Summary, usePRCards } from './Summary';
 
 const FREE_ITEM = { sets: 3, repMin: 8, repMax: 12, restSec: 90 };
 
@@ -34,7 +38,8 @@ export default function SessionScreen() {
   const [plate, setPlate] = useState<number | null>(null);
   const [menu, setMenu] = useState(false);
   const [pedra, setPedra] = useState<{ name: MascotAct; key: number }>();
-  const [summary, setSummary] = useState<{ session: Session; prs: PR[]; xp: number } | null>(null);
+  const [stuck, setStuck] = useState<number | null>(null);
+  const [summary, setSummary] = useState<{ session: Session; prs: PR[]; xp: number; stage: StageId } | null>(null);
   const once = useRef(false);
 
   const [conflict, setConflict] = useState<{ active: Session; start: string; name: string } | null>(null);
@@ -72,6 +77,9 @@ export default function SessionScreen() {
   }, [nav, params, open]);
 
   const endRest = useCallback(() => setRest(null), []);
+  // estágio de antes da sessão: basta pro cartão do recorde, sem recalcular XP a cada série
+  const stage = useMemo(() => (ctx ? computeXP({ ...ctx.game, sessions: ctx.history }, new Date()).stage : 'faisca'), [ctx]);
+  const sharePR = usePRCards(s && ctx && s.endedAt === null ? sessionPRs(s, ctx.history) : [], id => ctx?.lib.get(id)?.name ?? 'Exercício', stage);
 
   if (summary && ctx) return <Summary {...summary} lib={ctx.game.library} onDone={() => nav('/treino')} />;
   if (conflict && !s) return (
@@ -94,21 +102,37 @@ export default function SessionScreen() {
   const update = (fn: (x: Session) => void) => { const next = structuredClone(s); fn(next); save(next); };
   const itemOf = (exerciseId: string): TemplateItem => ctx.tpl?.items.find(i => i.exerciseId === exerciseId) ?? { exerciseId, ...FREE_ITEM };
   const prs = sessionPRs(s, ctx.history);
-  const isPR = (exerciseId: string, x: SetLog) => x.done && prs.some(p => p.exerciseId === exerciseId && p.kg === x.kg && p.reps === x.reps);
-  const doneCount = s.entries.reduce((n, e) => n + e.sets.filter(x => x.done).length, 0);
+  const isPR = (exerciseId: string, x: SetLog) => isWork(x) && prs.some(p => p.exerciseId === exerciseId && p.kg === x.kg && p.reps === x.reps);
+  const doneCount = s.entries.reduce((n, e) => n + e.sets.filter(isWork).length, 0);
+  const now = new Date();
+  // aquecimento pela carga de trabalho da primeira série (já vem com a sugestão da Pedra)
+  const workKg = (ei: number) => s.entries[ei].sets.find(x => !x.warmup)?.kg ?? 0;
+  const canWarm = (ei: number) => {
+    const e = s.entries[ei], ex = ctx.lib.get(e.exerciseId);
+    return !!ex && !e.sets.some(x => x.warmup) && warmupSets(workKg(ei), ex.equipment).length > 0;
+  };
+  const warmUp = (ei: number) => update(x => { x.entries[ei].sets.unshift(...warmupSets(workKg(ei), ctx.lib.get(x.entries[ei].exerciseId)!.equipment)); });
+  const deload = (ei: number) => update(x => {
+    const eq = ctx.lib.get(x.entries[ei].exerciseId)?.equipment ?? 'machine';
+    for (const set of x.entries[ei].sets) if (!set.done && !set.warmup && set.kg > 0) set.kg = deloadKg(set.kg, eq);
+  });
+  // aquecimento oferecido no primeiro composto (mais músculos secundários), não no primeiro da lista
+  const warmAt = [2, 1, 0].map(k => s.entries.findIndex((e, i) => (ctx.lib.get(e.exerciseId)?.secondary.length ?? 0) >= k && canWarm(i))).find(i => i >= 0) ?? -1;
 
   function toggle(ei: number, si: number) {
     const e = s!.entries[ei], set = e.sets[si];
     if (set.done) { update(x => { x.entries[ei].sets[si].done = false; }); return; }
+    if (set.warmup) { update(x => { x.entries[ei].sets[si].done = true; }); play('check'); return; } // aquecimento: sem descanso nem recorde
+    const wi = e.sets.slice(0, si).filter(x => !x.warmup).length;
     const item = itemOf(e.exerciseId), last = lastEntryFor(e.exerciseId, ctx!.history);
     const before = prs.filter(p => p.exerciseId === e.exerciseId).length;
     const next = structuredClone(s!);
     const ns = next.entries[ei].sets[si];
-    if (!ns.reps) ns.reps = last?.sets[si]?.reps || item.repMin;
+    if (!ns.reps) ns.reps = last?.sets.filter(x => !x.warmup)[wi]?.reps || item.repMin;
     ns.done = true;
     save(next);
     const after = sessionPRs(next, ctx!.history).filter(p => p.exerciseId === e.exerciseId).length;
-    if (after > before) { setPedra({ name: 'flex', key: Date.now() }); navigator.vibrate?.([30, 40, 30]); }
+    if (after > before) { setPedra({ name: 'flex', key: Date.now() }); play('pr'); } else play('check');
     if (item.restSec > 0 && !editing) setRest({ endsAt: Date.now() + item.restSec * 1000, total: item.restSec });
   }
 
@@ -117,15 +141,17 @@ export default function SessionScreen() {
     await finishSession(s!.id);
     const finished = { ...s!, endedAt: Date.now() };
     const today = new Date();
-    const xp = computeXP({ ...ctx!.game, sessions: [...ctx!.history, finished] }, today).xp - computeXP({ ...ctx!.game, sessions: ctx!.history }, today).xp;
+    const after = computeXP({ ...ctx!.game, sessions: [...ctx!.history, finished] }, today);
+    const xp = after.xp - computeXP({ ...ctx!.game, sessions: ctx!.history }, today).xp;
     setRest(null);
-    setSummary({ session: finished, prs: sessionPRs(finished, ctx!.history), xp });
+    play('done');
+    setSummary({ session: finished, prs: sessionPRs(finished, ctx!.history), xp, stage: after.stage });
   }
 
   const addExercises = (ids: string[]) => {
     const swap = picker?.swap;
     update(x => {
-      if (swap !== undefined) x.entries[swap] = { exerciseId: ids[0], sets: x.entries[swap].sets.map(() => ({ kg: 0, reps: 0, done: false })) };
+      if (swap !== undefined) x.entries[swap] = { exerciseId: ids[0], sets: x.entries[swap].sets.filter(y => !y.warmup).map(() => ({ kg: 0, reps: 0, done: false })) };
       else for (const id of ids) x.entries.push({ exerciseId: id, sets: Array.from({ length: FREE_ITEM.sets }, () => ({ kg: 0, reps: 0, done: false })) });
     });
     setPicker(null);
@@ -146,31 +172,42 @@ export default function SessionScreen() {
       {s.entries.map((e, ei) => {
         const ex = ctx.lib.get(e.exerciseId), item = itemOf(e.exerciseId), last = lastEntryFor(e.exerciseId, ctx.history);
         const tip = ex && suggestOverload(item, last, ex.equipment);
+        const lastWork = last?.sets.filter(x => !x.warmup);
+        let wn = 0, an = 0; // numeração separada: aquecimento "Aq", trabalho 1, 2, 3…
         return (
           <section key={ei} className="ex-card">
             <div className="ex-head">
               <b>{ex?.name ?? 'Exercício'}</b>
+              {plateau(e.exerciseId, ctx.history, now) && <button className="badge-stuck" onClick={() => setStuck(ei)}>Platô</button>}
               {ex?.equipment === 'barbell' && <button className="icon-btn" aria-label="Calcular anilhas" onClick={() => setPlate(ei)}><span className="plate-ico" /></button>}
               <button className="icon-btn" aria-label={`Opções de ${ex?.name ?? 'exercício'}`} onClick={() => setExMenu(ei)}><Icon name="more" /></button>
             </div>
             {tip && <p className="tip"><b>Pedra:</b> {tip.text}</p>}
+            {ei === warmAt && !editing && <button className="warm-btn" onClick={() => warmUp(ei)}>Aquecer</button>}
             <div className="sets" role="table">
               <div className="set-row head" role="row"><span>#</span><span>Última</span><span>kg</span><span>Reps</span><span /></div>
               {e.sets.map((x, si) => {
-                const prev = last?.sets[si];
+                const n = x.warmup ? ++an : ++wn;
+                const what = x.warmup ? `aquecimento ${n}` : `série ${n}`, of = x.warmup ? `do ${what}` : `da ${what}`;
+                const prev = x.warmup ? undefined : lastWork?.[n - 1];
                 return (
-                  <div key={si} role="row" className={`set-row${x.done ? ' done' : ''}${isPR(e.exerciseId, x) ? ' pr' : ''}`}>
-                    <span className="num">{si + 1}</span>
+                  <div key={si} role="row" className={`set-row${x.warmup ? ' warm' : ''}${x.done ? ' done' : ''}${isPR(e.exerciseId, x) ? ' pr' : ''}`}>
+                    <span className="num">{x.warmup ? 'Aq' : n}</span>
                     <span className="num muted">{prev ? `${fmtNum(prev.kg)}×${prev.reps}` : '—'}</span>
-                    <NumberField decimal aria-label={`Carga da série ${si + 1}`} value={x.kg || null} placeholder={prev ? fmtNum(prev.kg) : '0'}
-                      onValue={n => update(y => { y.entries[ei].sets[si].kg = n ?? 0; })} />
-                    <NumberField aria-label={`Reps da série ${si + 1}`} value={x.reps || null} placeholder={String(prev?.reps || item.repMin)}
-                      onValue={n => update(y => { y.entries[ei].sets[si].reps = Math.round(n ?? 0); })} />
-                    <button className="check" aria-pressed={x.done} aria-label={`Concluir série ${si + 1}`} onClick={() => toggle(ei, si)}><Icon name="check" /></button>
+                    <NumberField decimal aria-label={`Carga ${of}`} value={x.kg || null} placeholder={prev ? fmtNum(prev.kg) : '0'}
+                      onValue={v => update(y => { y.entries[ei].sets[si].kg = v ?? 0; })} />
+                    <NumberField aria-label={`Reps ${of}`} value={x.reps || null} placeholder={String(x.warmup ? x.reps : prev?.reps || item.repMin)}
+                      onValue={v => update(y => { y.entries[ei].sets[si].reps = Math.round(v ?? 0); })} />
+                    <button className="check" aria-pressed={x.done} aria-label={`Concluir ${what}`} onClick={() => toggle(ei, si)}><Icon name="check" /></button>
                   </div>
                 );
               })}
             </div>
+            {!editing && prs.filter(p => p.exerciseId === e.exerciseId).slice(-1).map(p => (
+              <button key="pr" className="share-pr-chip" onClick={() => sharePR(p)}>
+                <Icon name="share" /> Compartilhar recorde
+              </button>
+            ))}
             <button className="add-set" onClick={() => update(y => { const sets = y.entries[ei].sets; const l = sets.at(-1); sets.push({ kg: l?.kg ?? 0, reps: 0, done: false }); })}>
               <Icon name="plus" /> Série
             </button>
@@ -192,7 +229,19 @@ export default function SessionScreen() {
       <Sheet open={exMenu !== null} onClose={() => setExMenu(null)} title={ctx.lib.get(s.entries[exMenu ?? 0]?.exerciseId)?.name ?? ''}>
         <div className="menu">
           <button className="menu-item" onClick={() => { setPicker({ swap: exMenu! }); setExMenu(null); }}><Icon name="undo" /> Trocar exercício</button>
+          {exMenu !== null && !editing && canWarm(exMenu) && <button className="menu-item" onClick={() => { warmUp(exMenu); setExMenu(null); }}><Icon name="plus" /> Aquecer</button>}
           <button className="menu-item danger" onClick={() => { const i = exMenu!; setExMenu(null); update(x => { x.entries.splice(i, 1); }); }}><Icon name="trash" /> Remover</button>
+        </div>
+      </Sheet>
+
+      <Sheet open={stuck !== null} onClose={() => setStuck(null)} title="Carga parada há 3 semanas">
+        <div className="stuck-pedra">
+          <Mascot kind="pedra" size={64} interactive={false} />
+          <p className="muted">Acontece com todo mundo. Duas saídas que costumam destravar:</p>
+        </div>
+        <div className="menu">
+          <button className="menu-item" onClick={() => { deload(stuck!); setStuck(null); }}><Icon name="undo" /> Deload: −10% por uma semana</button>
+          <button className="menu-item" onClick={() => { setPicker({ swap: stuck! }); setStuck(null); }}><Icon name="undo" /> Trocar por variação</button>
         </div>
       </Sheet>
 
@@ -204,8 +253,8 @@ export default function SessionScreen() {
       </Sheet>
 
       {plate !== null && (
-        <PlateCalc open kg={s.entries[plate]?.sets.find(x => !x.done)?.kg ?? 0} onClose={() => setPlate(null)}
-          onKg={kg => update(x => { for (const set of x.entries[plate].sets) if (!set.done) set.kg = kg; })} />
+        <PlateCalc open kg={s.entries[plate]?.sets.find(x => !x.done && !x.warmup)?.kg ?? 0} onClose={() => setPlate(null)}
+          onKg={kg => update(x => { for (const set of x.entries[plate].sets) if (!set.done && !set.warmup) set.kg = kg; })} />
       )}
     </main>
   );

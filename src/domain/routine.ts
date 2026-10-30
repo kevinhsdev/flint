@@ -1,3 +1,4 @@
+import { isWork } from './strength';
 import type { Entry, Session, Template } from './types';
 
 const byNewest = (sessions: Session[]) =>
@@ -16,7 +17,7 @@ export function nextTemplate(templates: Template[], sessions: Session[]): Templa
 
 export function lastEntryFor(exerciseId: string, sessions: Session[]): Entry | undefined {
   for (const s of byNewest(sessions)) {
-    const e = s.entries.find(x => x.exerciseId === exerciseId && x.sets.some(set => set.done));
+    const e = s.entries.find(x => x.exerciseId === exerciseId && x.sets.some(isWork));
     if (e) return e;
   }
   return undefined;

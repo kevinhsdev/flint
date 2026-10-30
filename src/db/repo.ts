@@ -5,7 +5,8 @@ import { DEFAULT_SETTINGS } from '../domain/settings';
 import { makeSeed } from '../domain/seed';
 import { lastEntryFor } from '../domain/routine';
 import { suggestOverload } from '../domain/strength';
-import type { Entry, Exercise, Session, Settings, Template } from '../domain/types';
+import { generatePlan } from '../domain/plan';
+import type { Entry, Exercise, Profile, Session, Settings, Template } from '../domain/types';
 
 export const uid = () => crypto.randomUUID();
 
@@ -18,6 +19,12 @@ export async function getSettings(): Promise<Settings> {
 
 export async function saveSettings(p: Partial<Settings>) {
   await db.kv.put({ key: 'settings', value: { ...(await getSettings()), ...p } });
+}
+
+/** Carga-alvo de um exercício (previsão de meta); null remove. */
+export async function setTarget(exerciseId: string, kg: number | null) {
+  const { [exerciseId]: _old, ...targets } = (await getSettings()).targets;
+  await saveSettings({ targets: kg === null ? targets : { ...targets, [exerciseId]: kg } });
 }
 
 export async function ensureLibrary() {
@@ -52,6 +59,8 @@ export async function logWater(ml: number, at = new Date()) {
   await db.water.add({ id: uid(), day: localDay(at), at: at.getTime(), ml });
 }
 
+export const deleteWater = (id: string) => db.water.delete(id);
+
 export async function undoLastWater(day: string) {
   const last = (await db.water.where('day').equals(day).sortBy('at')).at(-1);
   if (last) await db.water.delete(last.id);
@@ -66,10 +75,23 @@ export async function logWeight(kg: number, day: string) {
 export const addPhoto = (blob: Blob, day: string) => db.photos.add({ id: uid(), day, blob });
 export const deletePhoto = (id: string) => db.photos.delete(id);
 
-/** Primeira abertura: biblioteca + dados de exemplo. Nas próximas, não faz nada. */
-export async function boot() {
+/**
+ * Abertura: garante a biblioteca e diz se a pessoa ainda precisa da pesquisa inicial.
+ * Quem já tem treinos, terminou a pesquisa ou está na demo vai direto pro app.
+ */
+export async function boot(): Promise<'survey' | 'ready'> {
   await ensureLibrary();
-  if (await db.kv.get('settings')) return;
+  const row = await db.kv.get('settings');
+  if (!row) return 'survey';
+  const s = await getSettings();
+  if (s.onboarded || s.demo || (await db.sessions.count()) > 0) return 'ready';
+  // backup antigo com rotina montada e sem histórico também já tem dados
+  return (await db.templates.toArray()).some(t => !t.archived) ? 'ready' : 'survey';
+}
+
+/** "Só quero explorar": dados de exemplo da fase 1. */
+export async function loadDemo() {
+  await ensureLibrary();
   const s = makeSeed(new Date());
   await db.transaction('rw', [db.templates, db.sessions, db.water, db.weights, db.kv], async () => {
     await db.templates.bulkAdd(s.templates);
@@ -85,6 +107,25 @@ export async function startFresh() {
   await wipeAll();
   await ensureLibrary();
   await db.kv.put({ key: 'settings', value: { ...DEFAULT_SETTINGS, demo: false } });
+}
+
+/**
+ * Fim da pesquisa: salva perfil e ajustes, registra o peso de hoje e (em 'generate') troca os treinos
+ * ativos pelo plano gerado. Os antigos são arquivados, nunca apagados: o histórico continua apontando pra eles.
+ */
+export async function applySurvey(p: Profile, body: { kg: number; cm: number; trainTime: string }, mode: 'generate' | 'keep' | 'own') {
+  if ((await getSettings()).demo) await startFresh(); // dados de exemplo não se misturam com os dela
+  const lib = await db.exercises.toArray();
+  await db.transaction('rw', [db.templates, db.weights, db.kv], async () => {
+    if (mode === 'generate') {
+      const active = (await db.templates.toArray()).filter(t => !t.archived);
+      await Promise.all(active.map(t => db.templates.update(t.id, { archived: true })));
+      // ids novos: refazer a pesquisa não pode sobrescrever o plan-A arquivado da vez anterior
+      await db.templates.bulkAdd(generatePlan(p, lib).map(t => ({ ...t, id: uid() })));
+    }
+    await logWeight(body.kg, localDay(new Date()));
+    await saveSettings({ profile: p, onboarded: true, trainDays: [...p.days].sort(), trainTime: body.trainTime, heightCm: body.cm, waterGoalMl: null, demo: false });
+  });
 }
 
 export async function wipeAll() {

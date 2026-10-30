@@ -3,7 +3,9 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
 import { getSettings } from '../../db/repo';
 import { MUSCLE_NAMES } from '../../domain/exercises';
+import { plateau } from '../../domain/plateau';
 import { exerciseSeries } from '../../domain/progress';
+import { monthName, monthOf, monthWrapped } from '../../domain/wrapped';
 import { Icon } from '../../ui/Icon';
 import { fmtNum } from '../../ui/NumberField';
 import { BodyWeight } from './BodyWeight';
@@ -16,7 +18,7 @@ export default function Progress() {
     const [sessions, library, weights, photos, settings] = await Promise.all([
       db.sessions.toArray(), db.exercises.toArray(), db.weights.toArray(), db.photos.toArray(), getSettings(),
     ]);
-    return { sessions, library, weights, photos, settings };
+    return { sessions, library, weights, photos, settings, water: await db.water.toArray() };
   }, []);
   if (!d) return <main className="screen" />;
 
@@ -26,9 +28,17 @@ export default function Progress() {
     .filter(x => x.series.length)
     .sort((a, b) => b.series.length - a.series.length);
 
+  // retrospectiva sob demanda: o mês passado (completo) ou, sem treino nele, o atual
+  const recap = [monthOf(new Date(), -1), monthOf(new Date())].find(m => monthWrapped(m, d));
+
   return (
     <main className="screen progress">
       <h1 className="title">Progresso</h1>
+      {recap && (
+        <Link to={`/progresso/retrospectiva/${recap}`} className="recap-link">
+          <Icon name="flame" /><span>Sua retrospectiva de {monthName(recap)}</span><Icon name="chev" />
+        </Link>
+      )}
       <Calendar sessions={d.sessions} trainDays={d.settings.trainDays} />
       <MuscleMap sessions={d.sessions} lib={d.library} />
       <BodyWeight weights={d.weights} heightCm={d.settings.heightCm} />
@@ -38,10 +48,11 @@ export default function Progress() {
           <ul className="ex-progress">
             {exercises.map(({ e, series }) => {
               const first = series[0].maxKg, last = series.at(-1)!.maxKg;
+              const stuck = plateau(e.id, d.sessions, new Date());
               return (
                 <li key={e.id}>
                   <Link to={`/progresso/exercicio/${e.id}`} aria-label={`${e.name}: ${fmtNum(last)} kg`}>
-                    <span><b>{e.name}</b><small>{MUSCLE_NAMES[e.primary]} · {series.length} {series.length === 1 ? 'treino' : 'treinos'}</small></span>
+                    <span><b>{e.name}{stuck && <i className="badge-stuck">Platô</i>}</b><small>{MUSCLE_NAMES[e.primary]} · {series.length} {series.length === 1 ? 'treino' : 'treinos'}</small></span>
                     <span className="num">{fmtNum(last)} kg{last > first && <small className="down"> +{fmtNum(last - first)}</small>}</span>
                     <Icon name="chev" />
                   </Link>

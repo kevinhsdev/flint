@@ -1,6 +1,8 @@
 import { lazy } from 'react';
 import { HashRouter, Route, Routes } from 'react-router';
 import { TabBar } from './ui/TabBar';
+import Routine from './screens/train/Routine';
+import TemplateEditor from './screens/train/TemplateEditor';
 
 const Dev = import.meta.env.DEV ? lazy(() => import('./screens/Dev')) : null;
 
@@ -11,7 +13,10 @@ export function Shell() {
     <div className="app">
       <Routes>
         <Route path="/" element={<Placeholder title="Hoje" />} />
-        <Route path="/treino" element={<Placeholder title="Treino" />} />
+        <Route path="/treino" element={<Routine />} />
+        <Route path="/treino/editar/:id" element={<TemplateEditor />} />
+        <Route path="/treino/sessao" element={<Placeholder title="Sessão" />} />
+        <Route path="/treino/historico" element={<Placeholder title="Histórico" />} />
         <Route path="/progresso" element={<Placeholder title="Progresso" />} />
         <Route path="/time" element={<Placeholder title="Time" />} />
         {Dev && <Route path="/dev" element={<Dev />} />}

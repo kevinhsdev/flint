@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flint — estágios da Faísca</title>
+<style>
+  :root { --bg: #0E0A12; --surface: #17111D; --text: #F5F0F7; --muted: #A193AA; --crimson: #E5163E; --gold: #F5B700; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Archivo Variable", system-ui, sans-serif; padding: 56px 24px; -webkit-font-smoothing: antialiased; }
+  h1 { font-size: 44px; font-weight: 900; font-stretch: 125%; letter-spacing: -.03em; margin: 0 0 8px; }
+  h1 i { font-style: normal; color: var(--crimson); }
+  p { color: var(--muted); margin: 0 0 40px; max-width: 52ch; line-height: 1.5; }
+  .row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; max-width: 1100px; }
+  figure { margin: 0; background: var(--surface); border-radius: 24px; padding: 32px 12px 20px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  figcaption { text-align: center; }
+  figcaption b { display: block; font-size: 18px; font-weight: 750; font-stretch: 110%; }
+  figcaption span { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .acts { display: flex; gap: 8px; margin-top: 32px; flex-wrap: wrap; }
+  .acts button { font: inherit; font-size: 14px; font-weight: 650; color: var(--text); background: var(--surface); border: 1px solid rgba(255,235,245,.1); border-radius: 999px; padding: 10px 16px; cursor: pointer; }
+  .acts button:active { transform: scale(.97); }
+  @media (max-width: 760px) { .row { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+<h1>Estágios da <i>Faísca</i></h1>
+<p>A Faísca cresce com o seu XP e a chama esquenta: laranja, vermelho, roxo e, no topo, azul. Toque, arraste ou use os botões.</p>
+<div class="row">
+  <figure><div data-s="faisca"></div><figcaption><b>Faísca</b><span>0 XP</span></figcaption></figure>
+  <figure><div data-s="chama"></div><figcaption><b>Chama</b><span>2.500 XP</span></figcaption></figure>
+  <figure><div data-s="fogueira"></div><figcaption><b>Fogueira</b><span>7.500 XP</span></figcaption></figure>
+  <figure><div data-s="forja"></div><figcaption><b>Forja</b><span>20.000 XP</span></figcaption></figure>
+</div>
+<div class="acts">
+  <button data-a="comemorar">Comemorar</button><button data-a="danca">Dançar</button><button data-a="boxe">Boxe</button>
+  <button data-a="polichinelo">Polichinelo</button><button data-a="bravo">Bravo</button><button data-a="acenar">Acenar</button>
+  <button data-mood>Triste / feliz</button>
+</div>
+<script type="module">
+  import '@fontsource-variable/archivo/standard.css';
+  import '/src/styles/tokens.css';
+  import '/src/styles/global.css';
+  import { mountMascot } from '/src/mascots/engine.js';
+  import { RULES } from '/src/domain/rules.ts';
+  document.body.style.background = '#0E0A12';
+  const hs = [...document.querySelectorAll('[data-s]')].map(el => {
+    el.style.cssText = 'width:200px;height:266px';
+    return mountMascot(el, 'faisca', { stage: el.dataset.s });
+  });
+  // XP real de cada estágio, direto das regras
+  document.querySelectorAll('figcaption span').forEach((sp, i) => { const st = RULES.stages[i]; if (st) sp.textContent = `${st.xp.toLocaleString('pt-BR')} XP`; });
+  let sad = false;
+  document.querySelectorAll('[data-a]').forEach(b => b.onclick = () => hs.forEach(h => h.act(b.dataset.a)));
+  document.querySelector('[data-mood]').onclick = () => { sad = !sad; hs.forEach(h => h.setMood(sad ? 'sad' : 'happy')); };
+</script>
+</body>
+</html>

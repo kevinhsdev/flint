@@ -12,6 +12,7 @@ import type { StageId } from '../../domain/rules';
 import { Mascot } from '../../mascots/Mascot';
 import type { MascotAct } from '../../mascots/engine';
 import { Icon } from '../../ui/Icon';
+import { play } from '../../ui/sound';
 import { fmtNum, NumberField } from '../../ui/NumberField';
 import { Sheet } from '../../ui/Sheet';
 import { ExercisePicker } from './ExercisePicker';
@@ -116,7 +117,7 @@ export default function SessionScreen() {
   function toggle(ei: number, si: number) {
     const e = s!.entries[ei], set = e.sets[si];
     if (set.done) { update(x => { x.entries[ei].sets[si].done = false; }); return; }
-    if (set.warmup) { update(x => { x.entries[ei].sets[si].done = true; }); return; } // aquecimento: sem descanso nem recorde
+    if (set.warmup) { update(x => { x.entries[ei].sets[si].done = true; }); play('check'); return; } // aquecimento: sem descanso nem recorde
     const wi = e.sets.slice(0, si).filter(x => !x.warmup).length;
     const item = itemOf(e.exerciseId), last = lastEntryFor(e.exerciseId, ctx!.history);
     const before = prs.filter(p => p.exerciseId === e.exerciseId).length;
@@ -126,7 +127,7 @@ export default function SessionScreen() {
     ns.done = true;
     save(next);
     const after = sessionPRs(next, ctx!.history).filter(p => p.exerciseId === e.exerciseId).length;
-    if (after > before) { setPedra({ name: 'flex', key: Date.now() }); navigator.vibrate?.([30, 40, 30]); }
+    if (after > before) { setPedra({ name: 'flex', key: Date.now() }); play('pr'); } else play('check');
     if (item.restSec > 0 && !editing) setRest({ endsAt: Date.now() + item.restSec * 1000, total: item.restSec });
   }
 
@@ -138,6 +139,7 @@ export default function SessionScreen() {
     const after = computeXP({ ...ctx!.game, sessions: [...ctx!.history, finished] }, today);
     const xp = after.xp - computeXP({ ...ctx!.game, sessions: ctx!.history }, today).xp;
     setRest(null);
+    play('done');
     setSummary({ session: finished, prs: sessionPRs(finished, ctx!.history), xp, stage: after.stage });
   }
 

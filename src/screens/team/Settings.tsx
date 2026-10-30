@@ -11,6 +11,7 @@ import { Icon } from '../../ui/Icon';
 import { fmtNum, NumberField } from '../../ui/NumberField';
 import { Sheet } from '../../ui/Sheet';
 import { shareFile } from '../../share/share';
+import { play, setSoundEnabled } from '../../ui/sound';
 
 const DAYS: [number, string][] = [[1, 'Seg'], [2, 'Ter'], [3, 'Qua'], [4, 'Qui'], [5, 'Sex'], [6, 'Sáb'], [0, 'Dom']];
 
@@ -67,6 +68,14 @@ export default function Settings() {
           <input type="time" value={s.trainTime} onChange={e => e.target.value && saveSettings({ trainTime: e.target.value })} />
         </label>
         <button className="btn ghost" onClick={() => setRedo(true)}>Refazer pesquisa</button>
+      </section>
+
+      <section className="card">
+        <div className="switch-row">
+          <div><h2>Sons</h2><p className="muted">Série feita, recorde, água e fim de treino.</p></div>
+          <button className="switch" role="switch" aria-checked={s.sound} aria-label="Sons"
+            onClick={() => { setSoundEnabled(!s.sound); void saveSettings({ sound: !s.sound }); if (!s.sound) play('check'); }} />
+        </div>
       </section>
 
       <section className="card">

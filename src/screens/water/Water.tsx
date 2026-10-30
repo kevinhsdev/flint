@@ -8,6 +8,7 @@ import type { MascotAct } from '../../mascots/engine';
 import { Mascot } from '../../mascots/Mascot';
 import { Glass } from '../../water/Glass';
 import { Icon } from '../../ui/Icon';
+import { play } from '../../ui/sound';
 import { NumberField } from '../../ui/NumberField';
 import { Sheet } from '../../ui/Sheet';
 import { useToday } from '../../ui/useToday';
@@ -42,7 +43,7 @@ export default function Water() {
   const manual = d.settings.waterGoalMl !== null;
   const sad = ml < goal * expectedWaterFraction(new Date());
   const customMl = Math.round(Number(custom));
-  const add = (n: number) => { setCustom(null); void logWater(n); };
+  const add = (n: number) => { setCustom(null); play('drop'); void logWater(n); };
 
   return (
     <main className="screen water-screen">

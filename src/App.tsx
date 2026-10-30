@@ -1,6 +1,7 @@
 import { lazy, useEffect, useState } from 'react';
 import { HashRouter, Route, Routes } from 'react-router';
-import { boot } from './db/repo';
+import { boot, getSettings } from './db/repo';
+import { setSoundEnabled } from './ui/sound';
 import { LoadingScreen } from './ui/LoadingScreen';
 import { TabBar } from './ui/TabBar';
 import { ErrorBoundary } from './ui/ErrorBoundary';
@@ -52,6 +53,7 @@ export default function App() {
     // o carregamento fica pelo menos um instante, pra não piscar
     Promise.all([boot(), new Promise(r => setTimeout(r, MIN_LOADING_MS))]).then(([next]) => {
       if (next === 'survey') window.location.hash = '#/bem-vindo';
+      void getSettings().then(s => setSoundEnabled(s.sound));
       setPhase('leaving');
       setTimeout(() => setPhase('ready'), 260);
     });

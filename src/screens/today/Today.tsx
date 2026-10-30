@@ -16,6 +16,7 @@ import { WaterCard } from '../../water/WaterCard';
 import { Bar } from '../../ui/Bar';
 import { DemoBanner } from '../../ui/DemoBanner';
 import { Icon } from '../../ui/Icon';
+import { play } from '../../ui/sound';
 import { fmtNum, NumberField } from '../../ui/NumberField';
 import { Sheet } from '../../ui/Sheet';
 import { startPath } from '../train/Routine';
@@ -139,7 +140,7 @@ export default function Today() {
       )}
 
       <div className="pair">
-        <WaterCard ml={ml} goal={goal} onAdd={n => logWater(n)} onUndo={() => undoLastWater(localDay(new Date()))} onOpen={() => nav('/agua')}
+        <WaterCard ml={ml} goal={goal} onAdd={n => { play('drop'); void logWater(n); }} onUndo={() => undoLastWater(localDay(new Date()))} onOpen={() => nav('/agua')}
           badge={<Mascot kind="gota" size={40} mood={gotaMood} interactive={false} />} />
         <button className="tile weight" onClick={() => { setKg(lastW?.kg ?? null); setWeighing(true); }} aria-label="Registrar peso">
           <div className="k">Peso {delta !== null && <span className={`num ${delta <= 0 ? 'down' : 'up'}`}>{delta > 0 ? '+' : delta < 0 ? '−' : ''}{fmtNum(Math.abs(Math.round(delta * 10) / 10))} kg</span>}</div>

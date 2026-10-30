@@ -8,6 +8,8 @@ import Routine from './screens/train/Routine';
 import TemplateEditor from './screens/train/TemplateEditor';
 import SessionScreen from './screens/train/Session';
 import History from './screens/train/History';
+import Progress from './screens/progress/Progress';
+import ExerciseScreen from './screens/progress/ExerciseChart';
 
 const Dev = import.meta.env.DEV ? lazy(() => import('./screens/Dev')) : null;
 
@@ -22,7 +24,8 @@ export function Shell() {
         <Route path="/treino/editar/:id" element={<TemplateEditor />} />
         <Route path="/treino/sessao" element={<SessionScreen />} />
         <Route path="/treino/historico" element={<History />} />
-        <Route path="/progresso" element={<Placeholder title="Progresso" />} />
+        <Route path="/progresso" element={<Progress />} />
+        <Route path="/progresso/exercicio/:id" element={<ExerciseScreen />} />
         <Route path="/time" element={<Placeholder title="Time" />} />
         {Dev && <Route path="/dev" element={<Dev />} />}
       </Routes>

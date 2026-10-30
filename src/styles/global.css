@@ -47,7 +47,7 @@ a { color: inherit; text-decoration: none; }
 /* mascotes (rig 2D) */
 .m { flex: none; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: none; }
 .m svg { width: 100%; height: 100%; overflow: visible; display: block; transition: filter 500ms ease; }
-.m.sad svg { filter: saturate(.55) brightness(.85); }
+.m.sad svg { filter: saturate(.8) brightness(.9); }
 .m .far { filter: brightness(.85); }
 .m .mk { transform-box: fill-box; transform-origin: center; animation: mk .8s ease-in-out infinite alternate; }
 @keyframes mk { from { transform: scale(.82); opacity: .65; } to { transform: scale(1.12); opacity: 1; } }

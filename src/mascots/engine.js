@@ -37,32 +37,37 @@ function blob(R, bumps, wob = () => 0, sway = 0, N = 64, up = 0) {
   return smooth(pts);
 }
 
-/* ---------- folha de expressões ---------- */
+/* ---------- folha de expressões (linguagem da logo: olhos brancos recortados, sem pupila) ---------- */
+// cada olho é desenhado como o esquerdo; o direito é espelhado (s = -1)
+const W = '#fff';
+const eye = (s, d) => `<g transform="scale(${s} 1)"><path d="${d}" fill="${W}"/></g>`;
 const EYE = {
-  neutro: k => `<ellipse rx="5" ry="7" fill="${k}"/><circle cx="-1.6" cy="-2.7" r="2" fill="#fff"/><circle cx="1.6" cy="2.9" r=".9" fill="#fff" opacity=".7"/>`,
-  feliz: k => `<path d="M-5.5 1.5Q0 -5.5 5.5 1.5" stroke="${k}" stroke-width="3" fill="none" stroke-linecap="round"/>`,
-  animado: k => `<path d="M0 -7Q1.4 -1.4 7 0Q1.4 1.4 0 7Q-1.4 1.4 -7 0Q-1.4 -1.4 0 -7Z" fill="${k}"/><circle cx="-1" cy="-1" r="1.2" fill="#fff"/>`,
-  surpreso: k => `<circle r="6.4" fill="${k}"/><circle cx="-2" cy="-2.4" r="2.3" fill="#fff"/><circle cx="2" cy="2.6" r="1" fill="#fff" opacity=".7"/>`,
-  bravo: (k, s) => `<ellipse cy="1" rx="4.8" ry="5.6" fill="${k}"/><circle cx="-1.4" cy="-1" r="1.6" fill="#fff"/><path d="M${-6 * s} -9L${4 * s} -5" stroke="${k}" stroke-width="3" stroke-linecap="round"/>`,
-  triste: (k, s) => `<ellipse cy="1.5" rx="4.2" ry="5" fill="${k}"/><circle cx="-1.3" cy="-.6" r="1.6" fill="#fff"/><path d="M${-5 * s} -5L${4 * s} -8.5" stroke="${k}" stroke-width="2.4" stroke-linecap="round"/>`,
-  esforco: (k, s) => `<path d="M${-5 * s} -5L${3 * s} 0L${-5 * s} 5" stroke="${k}" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`,
-  sono: k => `<path d="M-5 0Q0 3.5 5 0" stroke="${k}" stroke-width="2.8" fill="none" stroke-linecap="round"/>`,
-  tonto: k => `<path d="M0 0m-1 0a1 1 0 1 1 2 0a2.2 2.2 0 1 1 -4.4 0a3.6 3.6 0 1 1 7.2 0a5 5 0 1 1 -10 0" stroke="${k}" stroke-width="1.8" fill="none" stroke-linecap="round"/>`,
-  olhaCima: k => `<ellipse rx="5" ry="7" fill="${k}"/><circle cx="-1" cy="-4" r="2" fill="#fff"/>`,
+  // o olho da logo: topo reto em diagonal descendo para o centro, base arredondada
+  neutro: (k, s) => eye(s, 'M-10 -9L9.5 6Q4 11.5 -2 11.5Q-10.5 11 -11 2Q-11.2 -4.5 -10 -9Z'),
+  bravo: (k, s) => eye(s, 'M-10.5 -12L10 7Q4 11.5 -2 11.5Q-10.5 11 -11 2Q-11.2 -6 -10.5 -12Z'),
+  triste: (k, s) => eye(s, 'M-10 -1L9 -7Q11 3 5 9Q-2 13 -8 9Q-11.5 5 -10 -1Z'),
+  feliz: (k, s) => eye(s, 'M-10.5 6Q-10 -9 0 -9Q10 -9 10.5 6Q7 4 0 3.5Q-7 4 -10.5 6Z'),
+  animado: (k, s) => eye(s, 'M-11.5 7Q-11 -11 0 -11Q11 -11 11.5 7Q7.5 4.5 0 4Q-7.5 4.5 -11.5 7Z'),
+  surpreso: () => `<ellipse rx="9" ry="10.5" fill="${W}"/>`,
+  esforco: (k, s) => `<g transform="scale(${s} 1)"><path d="M-8 -8L7 0L-8 8" stroke="${W}" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>`,
+  sono: () => `<path d="M-9 1Q0 7 9 1" stroke="${W}" stroke-width="4" fill="none" stroke-linecap="round"/>`,
+  tonto: () => `<path d="M0 0m-1.5 0a1.5 1.5 0 1 1 3 0a3.2 3.2 0 1 1 -6.4 0a5 5 0 1 1 10 0a7 7 0 1 1 -14 0" stroke="${W}" stroke-width="3" fill="none" stroke-linecap="round"/>`,
+  olhaCima: (k, s) => eye(s, 'M-10 -12L9.5 3Q4 8.5 -2 8.5Q-10.5 8 -11 -1Q-11.2 -7.5 -10 -12Z'),
 };
+// boca só aparece quando há emoção; em repouso o rosto é o da logo
 const MOUTH = {
-  neutro: k => `<path d="M-5.5 0Q0 5 5.5 0" stroke="${k}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`,
-  feliz: k => `<path d="M-8 -1Q0 11 8 -1Z" fill="${k}"/><path d="M-4 4.4Q0 8.3 4 4.4Q0 2.2 -4 4.4Z" fill="#FF8FA3"/>`,
-  animado: k => `<path d="M-9.5 -1Q0 13 9.5 -1Z" fill="${k}"/><path d="M-4.8 5.2Q0 9.8 4.8 5.2Q0 2.6 -4.8 5.2Z" fill="#FF8FA3"/>`,
-  surpreso: k => `<ellipse cy="3" rx="3.6" ry="4.6" fill="${k}"/>`,
-  bravo: k => `<path d="M-6 3Q-3 -1 0 2Q3 -1 6 3" stroke="${k}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`,
-  foco: k => `<path d="M-4 1Q0 3.4 4 1" stroke="${k}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`,
-  triste: k => `<path d="M-5 4Q0 -1 5 4" stroke="${k}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`,
+  neutro: () => '',
+  feliz: k => `<path d="M-7 -1Q0 9 7 -1Z" fill="${k}"/>`,
+  animado: k => `<path d="M-9 -2Q0 12 9 -2Z" fill="${k}"/><path d="M-4 4.5Q0 7.5 4 4.5Q0 3 -4 4.5Z" fill="#FF8FA3"/>`,
+  surpreso: k => `<ellipse cy="2" rx="3.4" ry="4.4" fill="${k}"/>`,
+  bravo: () => '',
+  foco: () => '',
+  triste: k => `<path d="M-5 4Q0 -1 5 4" stroke="${k}" stroke-width="3" fill="none" stroke-linecap="round"/>`,
   esforco: k => `<rect x="-7" y="-2.5" width="14" height="7" rx="3" fill="${k}"/><rect x="-5.5" y="-.8" width="11" height="3.2" rx="1" fill="#fff"/>`,
-  bocejo: k => `<ellipse cy="3" rx="5" ry="7" fill="${k}"/><ellipse cy="6.5" rx="3" ry="2" fill="#FF8FA3"/>`,
-  sono: k => `<ellipse cy="2" rx="2.2" ry="2.6" fill="${k}"/>`,
-  tonto: k => `<path d="M-6 2Q-3 -1 0 2Q3 5 6 2" stroke="${k}" stroke-width="2.4" fill="none" stroke-linecap="round"/>`,
-  fala: k => `<ellipse cy="2.5" rx="4.6" ry="4" fill="${k}"/><ellipse cy="5" rx="2.6" ry="1.4" fill="#FF8FA3"/>`,
+  bocejo: k => `<ellipse cy="3" rx="4.6" ry="6.4" fill="${k}"/>`,
+  sono: () => '',
+  tonto: k => `<path d="M-6 2Q-3 -1 0 2Q3 5 6 2" stroke="${k}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`,
+  fala: k => `<ellipse cy="2" rx="4.4" ry="3.8" fill="${k}"/>`,
 };
 const EXPR = { neutro: ['neutro', 'neutro'], feliz: ['feliz', 'feliz'], animado: ['animado', 'animado'], surpreso: ['surpreso', 'surpreso'],
   bravo: ['bravo', 'bravo'], triste: ['triste', 'triste'], foco: ['bravo', 'foco'], esforco: ['esforco', 'esforco'], bocejo: ['sono', 'bocejo'],
@@ -84,11 +89,25 @@ function marks(e, R, top) {
 }
 
 /* ---------- personagens ---------- */
-const shade = (id, ao, rim) => `
-  <g clip-path="url(#cl${id})">
-    <ellipse class="hq" cx="20" cy="28" rx="46" ry="34" fill="${ao}" opacity=".5" filter="url(#fb${id})"/>
-    <use class="hq" href="#o${id}" fill="none" stroke="url(#rim${id})" stroke-width="10" opacity=".75" filter="url(#fs${id})"/>
-  </g>`;
+// sombra chapada de duas cores (como ilustração flat): a forma de novo, deslocada, recorta uma meia-lua escura
+const flat = (id, main, dark) => `
+  <g clip-path="url(#cl${id})"><use href="#o${id}" fill="${dark}"/><use data-r="lit" href="#o${id}" fill="${main}" transform="translate(-6 -5)"/></g>`;
+// silhueta da logo: escudo com ponta embaixo e três pontas em cima; a evolução cresce as pontas, não multiplica
+const CROWN = { x: [-.7, 0, .7], h: [.86, 1.16, .86] };
+function flame(R, k, t, M, sway, f) {
+  const c = CROWN, n = 3, P = (x, y) => `${f1(x * R)} ${f1(y * R)}`;
+  const tip = i => {
+    const h = c.h[i] * k * (1 + M * .06 * Math.sin(t * f * (1 + i * .13) + i * 1.9)), x = c.x[i] + sway * (h - .5) * .28;
+    return [x, -h];
+  };
+  const tips = c.x.map((_, i) => tip(i));
+  let d = `M${P(0, 1.06)}C${P(-.5, 1)} ${P(-1.03, .72)} ${P(-1, .24)}C${P(-.98, -.24)} ${P(-.88, -.6)} ${P(...tips[0])}`;
+  for (let i = 1; i < n; i++) {
+    const vx = (c.x[i - 1] + c.x[i]) / 2 + sway * .05, vy = -.58 + Math.abs(vx) * .05;
+    d += `L${P(vx, vy)}Q${P((vx + tips[i][0]) / 2 + .02 * Math.sign(-tips[i][0] || 1), (vy + tips[i][1]) / 2 - .06)} ${P(...tips[i])}`;
+  }
+  return d + `C${P(.88, -.6)} ${P(.98, -.24)} ${P(1, .24)}C${P(1.03, .72)} ${P(.5, 1)} ${P(0, 1.06)}Z`;
+}
 // pedra low-poly: contorno fixo, facetas recalculadas a partir de um "ápice" que gira com o rosto
 const ROCK = [[-90, 47], [-48, 44], [-8, 47], [32, 43], [74, 46], [118, 42], [160, 45], [205, 43], [240, 46]].map(([a, r]) => {
   const t = a * Math.PI / 180; return [Math.cos(t) * r, Math.sin(t) * r * .9];
@@ -106,41 +125,29 @@ const CHARS = {
     behaviors: ['boxe', 'polichinelo', 'look', 'look', 'fidget', 'danca'],
     specials: ['boxe', 'polichinelo'],
     head(id) {
-      const g = this.grad;
       return `
-      <radialGradient id="gh${id}" cx="48%" cy="66%" r="72%"><stop offset="0" stop-color="${g[0]}"/><stop offset=".28" stop-color="${g[1]}"/><stop offset=".6" stop-color="${g[2]}"/><stop offset=".88" stop-color="${g[3]}"/><stop offset="1" stop-color="${g[4]}"/></radialGradient>
-      <radialGradient id="gc${id}" cx="50%" cy="72%" r="65%"><stop offset="0" stop-color="${this.core[0]}"/><stop offset=".55" stop-color="${this.core[1]}" stop-opacity=".7"/><stop offset="1" stop-color="${this.core[2]}" stop-opacity="0"/></radialGradient>
-      <use class="hq" href="#o${id}" fill="${this.glow}" opacity=".55" filter="url(#f${id})"/>
-      <use href="#o${id}" fill="url(#gh${id})"/>
-      <g clip-path="url(#cl${id})"><path data-r="core" fill="url(#gc${id})" transform="translate(0 12)"/></g>
-      ${shade(id, this.shade[0], this.shade[1])}
-      <g data-r="spec"><ellipse cx="-16" cy="-14" rx="6" ry="11" fill="#fff" opacity=".3" transform="rotate(28 -16 -14)"/><circle cx="-20" cy="-22" r="2.4" fill="#fff" opacity=".75"/></g>`;
+      <use class="hq" href="#o${id}" fill="${this.glow}" opacity=".35" filter="url(#f${id})"/>
+      <use href="#o${id}" fill="${this.flat[0]}" stroke="${this.flat[0]}" stroke-width="3" stroke-linejoin="round"/>
+      ${flat(id, this.flat[0], this.flat[1])}`;
     },
     frame(s, t, r) {
-      const k = s.flare.a * (1 + clamp(s.vy * .0007, -.25, .35)) * (s.sleeping ? .7 : 1);
-      const tg = this.tongues.map((b, i) => ({ ...b, h: b.h * k * (1 + s.M * (.11 * Math.sin(t * b.f * s.speed + i * 1.7) + .05 * Math.sin(t * b.f * 2.7 + i))) }));
-      const wob = th => s.M * .02 * Math.sin(4 * th + t * 3);
+      const k = s.flare.a * (1 + clamp(s.vy * .0007, -.25, .35)) * (s.sleeping ? .82 : 1);
       const sway = clamp(-s.yaw.v * .35 - s.rot.v * .02 - s.vx * .0015, -.8, .8);
-      r.o.setAttribute('d', blob(this.R, tg, wob, sway, 64, .6));
-      r.core.setAttribute('d', blob(this.R * .58, tg.map(b => ({ ...b, h: b.h * .5, curl: (b.curl || 0) * .5 })), wob, sway * .5, 48, .6));
+      r.o.setAttribute('d', flame(this.R, k * this.tongues[0].h / 54, t * s.speed, s.M, sway, 5.4));
       if (s.big && Math.random() < .05 * this.embers * s.speed) s.emit(this.particle, s.x + (Math.random() - .5) * 40, s.y + this.headY - 40 - Math.random() * 30 * k);
     },
   },
   gota: {
     kind: 'gota',
     R: 42, top: 80, headY: -44, shoulders: 16,
-    body: ['#A6DBFF', '#3B82F6'], belly: '#DDF3FF', limb: '#4C93F7', limbHi: '#A6DBFF', foot: '#2A5FD0', ol: '#1C47B0',
-    face: { ey: 6, my: 19, ex: 13, ink: '#0B1B45', cheek: '#F9A8D4' },
+    body: ['#A6DBFF', '#3B82F6'], belly: '#DDF3FF', limb: '#2363D9', limbHi: '#A6DBFF', foot: '#1A4FB8', ol: '#1C47B0',
+    face: { ey: 9, my: 27, ex: 17, ink: '#0B1B45', cheek: '#F9A8D4' },
     behaviors: ['gotinha', 'balanco', 'look', 'look', 'fidget', 'danca'],
     specials: ['gotinha', 'balanco'],
     head: id => `
-      <radialGradient id="gh${id}" cx="44%" cy="36%" r="78%"><stop offset="0" stop-color="#F2FAFF"/><stop offset=".3" stop-color="#A6DBFF"/><stop offset=".68" stop-color="#4F9BFF"/><stop offset="1" stop-color="#1D4FC8"/></radialGradient>
-      <use class="hq" href="#o${id}" fill="#3B82F6" opacity=".5" filter="url(#f${id})"/>
-      <use href="#o${id}" fill="url(#gh${id})"/>
-      <g clip-path="url(#cl${id})"><ellipse class="hq" cx="8" cy="18" rx="22" ry="14" fill="#D6F1FF" opacity=".45" filter="url(#fs${id})"/></g>
-      ${shade(id, '#0E2C80', '#E6F7FF')}
-      <g data-r="spec"><path d="M-30 -2Q-32 -22 -17 -33" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round" opacity=".7"/><circle cx="-31" cy="9" r="3" fill="#fff" opacity=".6"/><circle cx="-12" cy="-30" r="1.6" fill="#fff" opacity=".9"/></g>
-      <g data-r="drip"><path d="M0 -9Q6 -1 6 3A6 6 0 0 1 -6 3Q-6 -1 0 -9Z" fill="url(#gh${id})"/><circle cx="-2" cy="1" r="1.4" fill="#fff" opacity=".8"/></g>`,
+      <use href="#o${id}" fill="#3B8BFF"/>
+      ${flat(id, '#3B8BFF', '#2363D9')}
+      <g data-r="drip"><path d="M0 -9Q6 -1 6 3A6 6 0 0 1 -6 3Q-6 -1 0 -9Z" fill="#3B8BFF"/></g>`,
     frame(s, t, r) {
       const j = s.jelly.a, k = s.flare.a * (1 + clamp(s.vy * .0006, -.2, .3));
       const wob = th => s.M * (.028 + j) * Math.sin(3 * th + t * 2.4 * s.speed) + s.M * (.016 + j * .6) * Math.sin(5 * th - t * 3.3);
@@ -153,20 +160,13 @@ const CHARS = {
   pedra: {
     kind: 'pedra',
     R: 46, top: 64, headY: -48, shoulders: 17,
-    body: ['#A9B4B0', '#66716F'], belly: '#C8D1CD', limb: '#7C8784', limbHi: '#B9C3BF', foot: '#4F5957', ol: '#3D4644', hw: 9,
-    face: { ey: 6, my: 20, ex: 14, ink: '#1F2624', cheek: '#FF9A8A' },
+    body: ['#A9B4B0', '#66716F'], belly: '#C8D1CD', limb: '#66716F', limbHi: '#B9C3BF', foot: '#4F5957', ol: '#3D4644', hw: 9,
+    face: { ey: 9, my: 28, ex: 18, ink: '#1F2624', cheek: '#FF9A8A' },
     behaviors: ['rosca', 'flex', 'look', 'look', 'fidget', 'danca'],
     specials: ['rosca', 'flex'],
     head: id => `
-      <use class="hq" href="#o${id}" fill="#000" opacity=".25" filter="url(#f${id})" transform="translate(4 8)"/>
       <use href="#o${id}" fill="#7E8986" stroke="#7E8986" stroke-width="9" stroke-linejoin="round"/>
       <g data-r="facets" stroke-linejoin="round"></g>
-      <g clip-path="url(#cl${id})">
-        <ellipse class="hq" cx="18" cy="34" rx="50" ry="26" fill="#1F2624" opacity=".4" filter="url(#fb${id})"/>
-        <use class="hq" href="#o${id}" fill="none" stroke="url(#rim${id})" stroke-width="9" opacity=".6" filter="url(#fs${id})"/>
-      </g>
-      <path d="M18 -10l5 7-3 6" stroke="#4F5957" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".55"/>
-      <g data-r="spec"><circle cx="-22" cy="-24" r="2.2" fill="#fff" opacity=".55"/></g>
       <g data-r="sprout" transform="translate(0 -42)">
         <path d="M0 0Q-1 -8 1 -14" stroke="#3E9E50" stroke-width="2.6" fill="none" stroke-linecap="round"/>
         <path data-r="leafL" d="M1 -12Q-10 -22 -18 -14Q-9 -8 1 -12Z" fill="#5BC86B"/><path d="M1 -12Q-9 -16 -16 -14" stroke="#3E9E50" stroke-width="1" fill="none" opacity=".6"/>
@@ -183,7 +183,7 @@ const CHARS = {
         const A = ROCK[i], B = ROCK[(i + 1) % ROCK.length], M = [(A[0] + B[0]) / 2 - C[0], (A[1] + B[1]) / 2 - C[1]], ml = Math.hypot(...M) || 1;
         const n = [M[0] / ml * .85, M[1] / ml * .85, .55], nl = Math.hypot(...n);
         const b = clamp((n[0] * LIGHT[0] + n[1] * LIGHT[1] + n[2] * LIGHT[2]) / nl, 0, 1);
-        const c = mixHex('#55605E', '#D2DBD7', Math.pow(b, 1.25));
+        const c = mixHex('#5E6967', '#B4BFBB', Math.round(Math.pow(b, 1.25) * 3) / 3);
         el.setAttribute('d', `M${f1(C[0])} ${f1(C[1])}L${f1(A[0])} ${f1(A[1])}L${f1(B[0])} ${f1(B[1])}Z`);
         el.setAttribute('fill', c); el.setAttribute('stroke', c); el.setAttribute('stroke-width', '1.2');
       });
@@ -203,9 +203,9 @@ function mount(el, kind, stage) {
   still = matchMedia('(prefers-reduced-motion: reduce)').matches;
   el.classList.add('m', kind);
   // estilo "nub" (Kirby/Slime Rancher): bracinhos e pés atrás da silhueta, só a ponta aparece
-  const arm = side => `<g data-r="arm${side}"><ellipse rx="9.5" ry="8" fill="url(#gn${id})"/></g>`;
+  const arm = side => `<g data-r="arm${side}"><ellipse rx="9.5" ry="8" fill="${C.limb}"/></g>`;
   const hand = side => `<g data-r="hand${side}">${side === 'R' ? `<g data-r="db" opacity="0"><rect x="-12" y="-1.5" width="24" height="3" rx="1.5" fill="#2B2E3A"/><rect x="-14" y="-6.5" width="5" height="13" rx="1.6" fill="#E5163E"/><rect x="9" y="-6.5" width="5" height="13" rx="1.6" fill="#E5163E"/></g>` : ''}</g>`;
-  const foot = side => `<g data-r="foot${side}"><ellipse rx="11" ry="7.5" fill="url(#gf${id})"/></g>`;
+  const foot = side => `<g data-r="foot${side}"><ellipse rx="11" ry="7.5" fill="${C.foot}"/></g>`;
   el.innerHTML = `<svg viewBox="-66 -168 132 176" role="img" aria-label="${kind}">
     <defs>
       <path id="o${id}"/>
@@ -225,7 +225,7 @@ function mount(el, kind, stage) {
         <g data-r="back">${arm('L')}${arm('R')}</g>
         <g data-r="belly"></g>
         <g data-r="head">${C.head(id)}
-          <g data-r="face"><g data-r="ckL"><ellipse rx="6" ry="3.4" fill="${C.face.cheek}" opacity=".5"/></g><g data-r="ckR"><ellipse rx="6" ry="3.4" fill="${C.face.cheek}" opacity=".5"/></g>
+          <g data-r="face"><g data-r="ckL"></g><g data-r="ckR"></g>
             <g data-r="eL"></g><g data-r="eR"></g><g data-r="mo"></g></g>
           <g data-r="marks"></g></g>
         <g data-r="front">${hand('L')}${hand('R')}</g>
@@ -274,7 +274,7 @@ const PART = {
   spark: { c: ['#FFE38A', '#FFF4C2', '#FF8A3D'], r: [1.5, 3.2], g: 380, life: .9 },
   drop: { c: ['#9AD4FF', '#4F9BFF', '#EAF7FF'], r: [2.5, 4.5], g: 700, life: 1, drop: true },
   tear: { c: ['#8CC8FF'], r: [2.2, 2.8], g: 500, life: 1, drop: true },
-  dust: { c: ['#8B8799', '#6E6A82'], r: [4, 7], g: -20, life: .7, grow: true },
+  dust: { c: ['#3D3549', '#4A4158'], r: [3, 5.5], g: -20, life: .7, grow: true },
   sweat: { c: ['#BFE3FF'], r: [2, 2.6], g: 420, life: .8, drop: true },
   heart: { c: ['#FF6B9A', '#FF8FB1'], r: [4, 6], g: -70, life: 1.3, heart: true },
   note: { c: ['#FFE38A', '#FFF4C2'], r: [9, 12], g: -50, life: 1.4, text: '♪' },
@@ -502,6 +502,7 @@ function tick(now) {
     T(r.shadow, `translate(${f1(s.x)} 0) scale(${f3(h)} 1)`); r.shadow.setAttribute('opacity', f2(.4 * h));
     C.frame(s, t, r);
     if (r.spec) T(r.spec, `translate(${f2(-yaw * 12)} ${f2(-pitch * 8)})`);
+    if (r.lit) T(r.lit, `translate(${f2(-6 - yaw * 9)} ${f2(-5 - pitch * 5)})`); // a luz chapada acompanha o giro
     if (s.orbit) T(s.orbit, `translate(0 ${-C.R - 4}) scale(1 .35) rotate(${f1(t * 360)})`);
 
     // rosto na esfera: gira com yaw/pitch

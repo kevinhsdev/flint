@@ -62,7 +62,7 @@ export default function Routine() {
             {rows.map((t, i) => (
               <li key={t.id} data-reorder className={`tpl${t.id === next?.id ? ' next' : ''}${dragging === i ? ' dragging' : ''}`}>
                 <span className="grip" aria-label={`Arrastar ${t.name}`} {...grip(i)}><Icon name="grip" /></span>
-                <span className={`thumb c${i % 4}`} aria-hidden="true">{badge(t.name)}</span>
+                <span className={`tpl-badge c${i % 4}`} aria-hidden="true">{badge(t.name)}</span>
                 <div className="tpl-body">
                   {t.id === next?.id && <span className="tag">Próximo</span>}
                   <b>{t.name}</b>

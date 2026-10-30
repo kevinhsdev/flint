@@ -1,7 +1,7 @@
 // Tudo aqui é derivado do histórico: nada de XP, medalha ou sequência é salvo no banco.
 import { addDays, localDay, weekday, weekStart } from './dates';
 import { RULES, type StageId } from './rules';
-import { findPRs } from './strength';
+import { findPRs, isWork } from './strength';
 import { waterGoalMl, weightOn } from './body';
 import type { Exercise, Session, Settings, WaterLog, WeightLog } from './types';
 
@@ -85,7 +85,7 @@ export function milestones(d: GameData, today: Date): MilestoneId[] {
   const weeksMet = goal ? [...sessionsPerWeek(d.sessions).values()].filter(n => n >= goal).length : 0;
   for (const n of m.goalWeeks) if (weeksMet >= n) out.push(`semanas-${n}`);
 
-  const volume = done(d.sessions).flatMap(s => s.entries.flatMap(e => e.sets)).filter(x => x.done).reduce((v, x) => v + x.kg * x.reps, 0);
+  const volume = done(d.sessions).flatMap(s => s.entries.flatMap(e => e.sets)).filter(isWork).reduce((v, x) => v + x.kg * x.reps, 0);
   for (const n of m.volumeKg) if (volume >= n) out.push(`volume-${n}`);
 
   const byDay = waterByDay(d.water);

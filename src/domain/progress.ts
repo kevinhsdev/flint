@@ -1,8 +1,8 @@
 import { localDay } from './dates';
-import { epley } from './strength';
+import { epley, isWork } from './strength';
 import { MUSCLES, type Exercise, type Muscle, type Session } from './types';
 
-const doneSets = (s: Session) => s.entries.flatMap(e => e.sets.filter(x => x.done).map(x => ({ ...x, exerciseId: e.exerciseId })));
+const doneSets = (s: Session) => s.entries.flatMap(e => e.sets.filter(isWork).map(x => ({ ...x, exerciseId: e.exerciseId })));
 const volumeOf = (s: Session) => doneSets(s).reduce((v, x) => v + x.kg * x.reps, 0);
 const dayOf = (s: Session) => localDay(new Date(s.startedAt));
 
@@ -10,7 +10,7 @@ export function sessionStats(s: Session, lib: Exercise[]) {
   const muscles = new Set<Muscle>();
   for (const e of s.entries) {
     const ex = lib.find(x => x.id === e.exerciseId);
-    if (ex && e.sets.some(x => x.done)) muscles.add(ex.primary);
+    if (ex && e.sets.some(isWork)) muscles.add(ex.primary);
   }
   return {
     durationMin: Math.round(((s.endedAt ?? Date.now()) - s.startedAt) / 60_000),

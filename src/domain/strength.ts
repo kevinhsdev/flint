@@ -1,5 +1,8 @@
 import { RULES } from './rules';
-import type { Entry, Equipment, Session, TemplateItem } from './types';
+import type { Entry, Equipment, Session, SetLog, TemplateItem } from './types';
+
+/** Série que conta: feita e não é aquecimento. */
+export const isWork = (s: SetLog): boolean => s.done && !s.warmup;
 
 export const epley = (kg: number, reps: number): number => (reps === 1 ? kg : kg * (1 + reps / 30));
 
@@ -26,7 +29,7 @@ export function findPRs(sessions: Session[]): PR[] {
 
   for (const s of finished(sessions)) {
     for (const e of s.entries) {
-      const done = e.sets.filter(x => x.done && x.reps > 0);
+      const done = e.sets.filter(x => isWork(x) && x.reps > 0);
       if (!done.length) continue;
       const byReps = bestAtReps.get(e.exerciseId) ?? new Map<number, number>();
       const seen = bestAtReps.has(e.exerciseId);
@@ -54,7 +57,7 @@ export function findPRs(sessions: Session[]): PR[] {
 const kgText = (n: number) => String(n).replace('.', ',');
 
 export function suggestOverload(item: TemplateItem, last: Entry | undefined, eq: Equipment): { kg: number; text: string } | null {
-  const done = last?.sets.filter(s => s.done) ?? [];
+  const done = last?.sets.filter(isWork) ?? [];
   if (!done.length) return null;
   const kg = Math.max(...done.map(s => s.kg));
   const inc = RULES.overloadKg[eq];

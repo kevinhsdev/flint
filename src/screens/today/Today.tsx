@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
@@ -13,7 +13,8 @@ import { monthName, monthOf, monthWrapped } from '../../domain/wrapped';
 import type { Exercise, Template } from '../../domain/types';
 import { Mascot } from '../../mascots/Mascot';
 import { WaterCard } from '../../water/WaterCard';
-import { Bar } from '../../ui/Bar';
+import { FeatureCard } from '../../ui/FeatureCard';
+import { templatePhoto } from '../../domain/photos';
 import { DemoBanner } from '../../ui/DemoBanner';
 import { Icon } from '../../ui/Icon';
 import { play } from '../../ui/sound';
@@ -88,58 +89,47 @@ export default function Today() {
   const recap = now.getDate() <= 7 && monthWrapped(monthOf(now, -1), game) ? monthOf(now, -1) : null;
   const line = coachLine({ hasRoutine: active.length > 0, trainedToday, isTrainDay, mood: faiscaMood, next: next ? { name: next.name, muscles: musclesOf(next, lib) } : undefined });
 
+  const faisca = <div className="glow-fire"><Mascot kind="faisca" size={64} stage={stage} mood={faiscaMood} /></div>;
+  const activeTpl = d.active ? d.templates.find(t => t.id === d.active!.templateId) : undefined;
+
   return (
     <main className="screen today">
       {d.settings.demo && <DemoBanner />}
 
-      <header className="hd">
+      <header className="hd rise">
         <div>
-          <div className="d">{now.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
-          <h1>{greeting(now.getHours())}</h1>
+          <div className="eyebrow">{now.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
+          <h1 className="title">{greeting(now.getHours())}</h1>
         </div>
         <div className="streak num" aria-label={`${streak} semanas seguidas na meta`}><Icon name="flame" />{streak}</div>
       </header>
 
-      <div className="coach">
-        <div className="glow-fire"><Mascot kind="faisca" size={76} stage={stage} mood={faiscaMood} /></div>
-        <p className="bubble">{line}</p>
-      </div>
-
       {recap && (
-        <Link to={`/progresso/retrospectiva/${recap}`} className="recap-link">
+        <Link to={`/progresso/retrospectiva/${recap}`} className="recap-link rise">
           <Icon name="flame" /><span>Sua retrospectiva de {monthName(recap)} está pronta</span><Icon name="chev" />
         </Link>
       )}
 
-      <div className="goals">
-        <Bar label={trainedToday ? 'Treino ✓' : isTrainDay ? 'Treino' : 'Folga'} value={trainedToday || !isTrainDay ? 1 : 0} />
-        <Bar label={`${fmtNum(ml / 1000)} / ${fmtNum(goal / 1000)} L`} value={ml / goal} tone="water" />
+      <div className="rise" style={{ '--i': 1 } as CSSProperties}>
+        {d.active ? (
+          <FeatureCard photo={templatePhoto(activeTpl?.items ?? d.active.entries, lib)} eyebrow="Em andamento" title={d.active.name} peek={faisca}
+            meta="Continue de onde parou"
+            action={<Link to="/treino/sessao" className="btn-white"><Icon name="play" />Continuar</Link>} />
+        ) : next ? (
+          <FeatureCard photo={templatePhoto(next.items, lib)} eyebrow={trainedToday ? 'Próximo treino' : isTrainDay ? 'Treino de hoje' : 'Próximo treino'}
+            title={next.name} peek={faisca}
+            meta={<>{musclesOf(next, lib).join(', ') || 'Sem exercícios ainda'} · {next.items.length} exercícios
+              {active.length > 1 && <button className="swap" onClick={() => setPick(true)}>Trocar</button>}</>}
+            action={<button className="btn-white" onClick={() => nav(startPath(next.id))}><Icon name="play" />Começar</button>} />
+        ) : (
+          <FeatureCard eyebrow="Rotina" title="Monte seus treinos" peek={faisca}
+            meta="Do jeito que você treina: A, B, C… quantos quiser."
+            action={<button className="btn-white" onClick={() => nav('/treino/editar/novo')}><Icon name="plus" />Montar rotina</button>} />
+        )}
+        <p className="bubble coach-line">{line}</p>
       </div>
 
-      {d.active ? (
-        <Link to="/treino/sessao" className="hero-cta">
-          <div className="k">Em andamento</div><h2>{d.active.name}</h2>
-          <div className="row"><span className="chips"><span>Continue de onde parou</span></span><span className="btn-white"><Icon name="play" />Continuar</span></div>
-        </Link>
-      ) : next ? (
-        <div className="hero-cta">
-          <div className="k">{trainedToday ? 'Próximo' : 'Hoje'}</div>
-          <h2>{next.name}</h2>
-          <div className="s">{musclesOf(next, lib).join(', ') || 'Sem exercícios ainda'}</div>
-          <div className="row">
-            <div className="chips"><span>{next.items.length} exercícios</span>{active.length > 1 && <button className="swap" onClick={() => setPick(true)}>Trocar</button>}</div>
-            <button className="btn-white" onClick={() => nav(startPath(next.id))}><Icon name="play" />Começar</button>
-          </div>
-        </div>
-      ) : (
-        <div className="hero-cta">
-          <div className="k">Rotina</div><h2>Monte seus treinos</h2>
-          <div className="s">Do jeito que você treina: A, B, C… quantos quiser.</div>
-          <div className="row"><span /><button className="btn-white" onClick={() => nav('/treino/editar/novo')}><Icon name="plus" />Montar rotina</button></div>
-        </div>
-      )}
-
-      <div className="pair">
+      <div className="pair rise" style={{ '--i': 2 } as CSSProperties}>
         <WaterCard ml={ml} goal={goal} onAdd={n => { play('drop'); void logWater(n); }} onUndo={() => undoLastWater(localDay(new Date()))} onOpen={() => nav('/agua')}
           badge={<Mascot kind="gota" size={40} mood={gotaMood} interactive={false} />} />
         <button className="tile weight" onClick={() => { setKg(lastW?.kg ?? null); setWeighing(true); }} aria-label="Registrar peso">
@@ -152,8 +142,8 @@ export default function Today() {
       </div>
 
       {lastPR && (
-        <Link to={`/progresso/exercicio/${lastPR.exerciseId}`} className="tile pr">
-          <div className="glow-steel"><Mascot kind="pedra" size={52} interactive={false} /></div>
+        <Link to={`/progresso/exercicio/${lastPR.exerciseId}`} className="tile black pr rise" style={{ '--i': 3 } as CSSProperties}>
+          <Mascot kind="pedra" size={52} interactive={false} />
           <div><div className="t">Novo recorde: {lib.get(lastPR.exerciseId)?.name ?? 'exercício'}</div>
             <div className="s num"><b>{fmtNum(lastPR.kg)} kg × {lastPR.reps}</b> · {ago(localDay(new Date(lastPR.at)), today)}</div></div>
           <Icon name="chev" className="icon chev" />

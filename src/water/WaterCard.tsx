@@ -35,7 +35,7 @@ export function WaterCard({ ml, goal, onAdd, onUndo, badge, onOpen }: Props) {
   return (
     <>
       <div
-        className="tile water" role="button" tabIndex={0} aria-label={`Água: ${liters(ml)} de ${liters(goal)} litros. Toque para +250 ml, segure para outras opções`}
+        className="tile blue water" role="button" tabIndex={0} aria-label={`Água: ${liters(ml)} de ${liters(goal)} litros. Toque para +250 ml, segure para outras opções`}
         onPointerDown={down} onPointerUp={cancel} onPointerLeave={cancel} onPointerCancel={cancel}
         onClick={() => { if (!held.current) add(250); held.current = false; }}
         onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); add(250); } }}

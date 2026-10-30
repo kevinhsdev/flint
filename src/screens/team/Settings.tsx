@@ -29,6 +29,7 @@ export default function Settings() {
   const [photos, setPhotos] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [reset, setReset] = useState(false);
+  const [redo, setRedo] = useState(false);
   const [pending, setPending] = useState<File | null>(null);
   if (!d) return <main className="screen" />;
   const { s } = d;
@@ -74,6 +75,7 @@ export default function Settings() {
         <label className="field"><span>Horário</span>
           <input type="time" value={s.trainTime} onChange={e => e.target.value && saveSettings({ trainTime: e.target.value })} />
         </label>
+        <button className="btn ghost" onClick={() => setRedo(true)}>Refazer pesquisa</button>
       </section>
 
       <section className="card">
@@ -116,11 +118,19 @@ export default function Settings() {
         </div>
       </Sheet>
 
+      <Sheet open={redo} onClose={() => setRedo(false)} title="Refazer a pesquisa?">
+        <p className="muted">Seus treinos atuais serão arquivados; o histórico continua. No fim você escolhe entre gerar um plano novo ou manter sua rotina.</p>
+        <div className="row-2">
+          <button className="btn ghost" onClick={() => setRedo(false)}>Cancelar</button>
+          <button className="btn" onClick={() => nav('/bem-vindo?refazer=1')}>Começar</button>
+        </div>
+      </Sheet>
+
       <Sheet open={reset} onClose={() => setReset(false)} title="Começar do zero?">
         <p className="muted">Treinos, água, peso e fotos serão apagados deste aparelho. A biblioteca de exercícios continua.</p>
         <div className="row-2">
           <button className="btn ghost" onClick={() => setReset(false)}>Cancelar</button>
-          <button className="btn" onClick={async () => { await startFresh(); setReset(false); nav('/'); }}>Apagar tudo</button>
+          <button className="btn" onClick={async () => { await startFresh(); setReset(false); nav('/bem-vindo'); }}>Apagar tudo</button>
         </div>
       </Sheet>
     </main>

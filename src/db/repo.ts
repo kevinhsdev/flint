@@ -5,7 +5,8 @@ import { DEFAULT_SETTINGS } from '../domain/settings';
 import { makeSeed } from '../domain/seed';
 import { lastEntryFor } from '../domain/routine';
 import { suggestOverload } from '../domain/strength';
-import type { Entry, Exercise, Session, Settings, Template } from '../domain/types';
+import { generatePlan } from '../domain/plan';
+import type { Entry, Exercise, Profile, Session, Settings, Template } from '../domain/types';
 
 export const uid = () => crypto.randomUUID();
 
@@ -98,6 +99,25 @@ export async function startFresh() {
   await wipeAll();
   await ensureLibrary();
   await db.kv.put({ key: 'settings', value: { ...DEFAULT_SETTINGS, demo: false } });
+}
+
+/**
+ * Fim da pesquisa: salva perfil e ajustes, registra o peso de hoje e (em 'generate') troca os treinos
+ * ativos pelo plano gerado. Os antigos são arquivados, nunca apagados: o histórico continua apontando pra eles.
+ */
+export async function applySurvey(p: Profile, body: { kg: number; cm: number; trainTime: string }, mode: 'generate' | 'keep' | 'own') {
+  if ((await getSettings()).demo) await startFresh(); // dados de exemplo não se misturam com os dela
+  const lib = await db.exercises.toArray();
+  await db.transaction('rw', [db.templates, db.weights, db.kv], async () => {
+    if (mode === 'generate') {
+      const active = (await db.templates.toArray()).filter(t => !t.archived);
+      await Promise.all(active.map(t => db.templates.update(t.id, { archived: true })));
+      // ids novos: refazer a pesquisa não pode sobrescrever o plan-A arquivado da vez anterior
+      await db.templates.bulkAdd(generatePlan(p, lib).map(t => ({ ...t, id: uid() })));
+    }
+    await logWeight(body.kg, localDay(new Date()));
+    await saveSettings({ profile: p, onboarded: true, trainDays: [...p.days].sort(), trainTime: body.trainTime, heightCm: body.cm, waterGoalMl: null, demo: false });
+  });
 }
 
 export async function wipeAll() {

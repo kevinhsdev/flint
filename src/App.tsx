@@ -14,6 +14,8 @@ import ExerciseScreen from './screens/progress/ExerciseChart';
 import Team from './screens/team/Team';
 import Settings from './screens/team/Settings';
 import Water from './screens/water/Water';
+import Survey from './screens/welcome/Survey';
+import YourPlan from './screens/welcome/YourPlan';
 
 const Dev = import.meta.env.DEV ? lazy(() => import('./screens/Dev')) : null;
 
@@ -27,6 +29,8 @@ export function Shell() {
         <Route path="/treino/sessao" element={<SessionScreen />} />
         <Route path="/treino/historico" element={<History />} />
         <Route path="/agua" element={<Water />} />
+        <Route path="/bem-vindo" element={<Survey />} />
+        <Route path="/bem-vindo/plano" element={<YourPlan />} />
         <Route path="/progresso" element={<Progress />} />
         <Route path="/progresso/exercicio/:id" element={<ExerciseScreen />} />
         <Route path="/time" element={<Team />} />
@@ -44,7 +48,8 @@ export default function App() {
   const [phase, setPhase] = useState<'loading' | 'leaving' | 'ready'>('loading');
   useEffect(() => {
     // o carregamento fica pelo menos um instante, pra não piscar
-    Promise.all([boot(), new Promise(r => setTimeout(r, MIN_LOADING_MS))]).then(() => {
+    Promise.all([boot(), new Promise(r => setTimeout(r, MIN_LOADING_MS))]).then(([next]) => {
+      if (next === 'survey') window.location.hash = '#/bem-vindo';
       setPhase('leaving');
       setTimeout(() => setPhase('ready'), 260);
     });

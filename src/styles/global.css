@@ -500,3 +500,49 @@ html { scroll-padding-bottom: calc(180px + var(--safe-bottom)); scroll-padding-t
 .switch[aria-checked="true"]::after { transform: translateX(20px); }
 .streak-line { font-size: 14px; color: var(--muted); margin: -2px 0 12px; }
 .streak-line b { color: #7FE3F5; }
+
+/* pesquisa inicial e "seu plano" */
+.survey, .your-plan { min-height: 100dvh; padding-bottom: calc(var(--safe-bottom) + 20px); }
+.sv-top { display: grid; grid-template-columns: 40px 1fr; align-items: center; gap: 12px; }
+.sv-bar { height: 8px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
+.sv-bar i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--crimson), #FF6A1A); transition: width 420ms cubic-bezier(.34, 1.4, .5, 1); }
+.sv-guide { display: flex; align-items: flex-end; gap: 10px; margin-top: 6px; }
+.sv-bubble { position: relative; flex: 1; padding: 12px 14px; border-radius: 18px 18px 18px 6px; background: var(--surface-2); font-size: 14px; line-height: 1.35; color: var(--text); }
+.sv-step, .yp-screen, .sv-bubble { transition: opacity 300ms var(--ease-out), transform 300ms var(--ease-out); }
+@starting-style {
+  .sv-step, .yp-screen { opacity: 0; transform: translateX(18px); }
+  .sv-bubble { opacity: 0; transform: scale(.94); }
+}
+.sv-step, .yp-screen { display: grid; gap: 14px; align-content: start; flex: 1; }
+.sv-opts { display: grid; gap: 10px; }
+.sv-opt { display: grid; gap: 2px; text-align: left; padding: 16px 18px; border-radius: 20px; background: var(--surface); box-shadow: inset 0 0 0 1.5px var(--line);
+  transition: transform 140ms var(--ease-out), box-shadow 160ms, background 160ms; user-select: none; -webkit-user-select: none; touch-action: manipulation; }
+.sv-opt b { font-size: 17px; font-weight: 760; }
+.sv-opt span { font-size: 13px; color: var(--muted); }
+.sv-opt:active { transform: scale(.98); }
+.sv-opt.on { background: rgba(229,22,62,.12); box-shadow: inset 0 0 0 2px var(--crimson); }
+.sv-days { display: flex; flex-wrap: wrap; gap: 8px; }
+.sv-days .pill { height: 48px; min-width: 56px; font-size: 15px; }
+.sv-body { display: grid; gap: 4px; }
+.sv-err { color: #FF6B81; font-size: 12.5px; font-weight: 650; }
+.field input[aria-invalid="true"] { box-shadow: inset 0 0 0 1.5px #FF6B81; }
+.sv-foot { display: grid; gap: 8px; margin-top: auto; }
+.sv-skip { justify-self: center; padding: 10px; font-size: 14px; font-weight: 650; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
+
+.yp-kicker { font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--crimson); }
+.yp-text { font-size: 16px; line-height: 1.45; color: var(--text); opacity: .86; }
+.yp-bmi { display: flex; align-items: baseline; gap: 8px; }
+.yp-bmi b { font-size: 64px; font-weight: 820; letter-spacing: -.04em; }
+.yp-bmi span { color: var(--muted); font-weight: 700; }
+.yp-meter { position: relative; height: 12px; border-radius: 99px; background: linear-gradient(90deg, #4FA3FF 0 14%, #3DDC97 14% 40%, #FFC23D 40% 60%, #FF5A5F 60%); }
+.yp-meter i { position: absolute; top: 50%; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%; background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,.5), 0 0 0 4px var(--bg);
+  transition: left 900ms cubic-bezier(.34, 1.3, .5, 1); }
+@starting-style { .yp-meter i { left: 0 !important; } }
+.yp-meter-labels { display: grid; grid-template-columns: 14fr 26fr 20fr 40fr; font-size: 11px; color: var(--muted); font-weight: 650; }
+.yp-list, .yp-steps { list-style: none; display: grid; gap: 8px; }
+.yp-list li { display: flex; justify-content: space-between; gap: 10px; padding: 14px 16px; border-radius: 16px; background: var(--surface); }
+.yp-list span { color: var(--muted); font-size: 13px; }
+.yp-steps li { display: grid; gap: 2px; padding: 14px 16px 14px 18px; border-radius: 16px; background: var(--surface); border-left: 3px solid var(--crimson); }
+.yp-steps b { font-size: 13px; color: var(--crimson); }
+.yp-water { display: flex; align-items: flex-end; justify-content: center; gap: 18px; padding: 8px 0; }
+.yp-hero { display: grid; place-items: center; padding: 20px 0 4px; }

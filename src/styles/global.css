@@ -239,3 +239,16 @@ input { min-width: 0; }
 .prs h2 { margin: 0 0 8px; font-size: 15px; color: var(--gold-hi); }
 .prs ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .prs li { display: flex; justify-content: space-between; font-size: 14px; }
+
+/* histórico */
+.month { margin-bottom: 18px; }
+.month-title { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--faint); margin: 0 0 8px 4px; font-weight: 700; }
+.hist { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.hist li { display: flex; align-items: center; background: var(--surface); border-radius: 20px; box-shadow: inset 0 0 0 1px var(--line); }
+.hist-item { flex: 1; min-width: 0; display: grid; gap: 4px; padding: 12px 4px 12px 14px; text-decoration: none; }
+.hist-top { display: flex; justify-content: space-between; gap: 8px; }
+.hist-top b { font-weight: 750; }
+.hist-top .muted { font-size: 12.5px; white-space: nowrap; }
+.hist-meta { display: flex; gap: 12px; font-size: 13px; color: var(--text); }
+.gold { color: var(--gold-hi); font-weight: 700; }
+.hist-ex { color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

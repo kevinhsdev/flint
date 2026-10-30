@@ -41,10 +41,10 @@ export default function SessionScreen() {
     if (once.current) return; // StrictMode roda o efeito duas vezes; a sessão só pode nascer uma
     once.current = true;
     (async () => {
-      const start = params.get('start');
-      let active = await getActiveSession();
+      const start = params.get('start'), edit = params.get('edit');
+      let active = edit ? await db.sessions.get(edit) : await getActiveSession();
       if (!active && start) { await startSession(start === 'livre' ? null : start); active = await getActiveSession(); }
-      if (!active) { nav('/treino', { replace: true }); return; }
+      if (!active) { nav(edit ? '/treino/historico' : '/treino', { replace: true }); return; }
       if (start) nav('/treino/sessao', { replace: true });
       const [sessions, library, water, weights, settings] = await Promise.all([
         db.sessions.toArray(), db.exercises.toArray(), db.water.toArray(), db.weights.toArray(), getSettings(),
@@ -64,10 +64,10 @@ export default function SessionScreen() {
   if (summary && ctx) return <Summary {...summary} lib={ctx.game.library} onDone={() => nav('/treino')} />;
   if (!s || !ctx) return <main className="screen" />;
 
-  const update = (fn: (x: Session) => void) => {
-    const next = structuredClone(s); fn(next);
-    setS(next); void updateSession(next);
-  };
+  // em andamento grava a cada mudança; editando o histórico, só ao salvar
+  const editing = s.endedAt !== null;
+  const save = (next: Session) => { setS(next); if (!editing) void updateSession(next); };
+  const update = (fn: (x: Session) => void) => { const next = structuredClone(s); fn(next); save(next); };
   const itemOf = (exerciseId: string): TemplateItem => ctx.tpl?.items.find(i => i.exerciseId === exerciseId) ?? { exerciseId, ...FREE_ITEM };
   const prs = sessionPRs(s, ctx.history);
   const isPR = (exerciseId: string, x: SetLog) => x.done && prs.some(p => p.exerciseId === exerciseId && p.kg === x.kg && p.reps === x.reps);
@@ -82,10 +82,10 @@ export default function SessionScreen() {
     const ns = next.entries[ei].sets[si];
     if (!ns.reps) ns.reps = last?.sets[si]?.reps || item.repMin;
     ns.done = true;
-    setS(next); void updateSession(next);
+    save(next);
     const after = sessionPRs(next, ctx!.history).filter(p => p.exerciseId === e.exerciseId).length;
     if (after > before) { setPedra({ name: 'flex', key: Date.now() }); navigator.vibrate?.([30, 40, 30]); }
-    if (item.restSec > 0) setRest({ endsAt: Date.now() + item.restSec * 1000, total: item.restSec });
+    if (item.restSec > 0 && !editing) setRest({ endsAt: Date.now() + item.restSec * 1000, total: item.restSec });
   }
 
   async function finish() {
@@ -112,9 +112,11 @@ export default function SessionScreen() {
       <header className="screen-head">
         <div className="session-title">
           <Mascot kind="pedra" size={52} act={pedra} interactive={false} />
-          <div><small className="muted">Em andamento</small><h1 className="title sm">{s.name}</h1></div>
+          <div><small className="muted">{editing ? 'Editando' : 'Em andamento'}</small><h1 className="title sm">{s.name}</h1></div>
         </div>
-        <button className="icon-btn" aria-label="Opções do treino" onClick={() => setMenu(true)}><Icon name="more" /></button>
+        {editing
+          ? <button className="icon-btn" aria-label="Cancelar edição" onClick={() => nav('/treino/historico')}><Icon name="close" /></button>
+          : <button className="icon-btn" aria-label="Opções do treino" onClick={() => setMenu(true)}><Icon name="more" /></button>}
       </header>
 
       {s.entries.map((e, ei) => {
@@ -153,7 +155,9 @@ export default function SessionScreen() {
       })}
 
       <button className="btn ghost" onClick={() => setPicker({})}><Icon name="plus" /> Adicionar exercício</button>
-      <button className="btn wide" onClick={finish}>Finalizar</button>
+      {editing
+        ? <button className="btn wide" onClick={async () => { await updateSession(s); nav('/treino/historico'); }}>Salvar</button>
+        : <button className="btn wide" onClick={finish}>Finalizar</button>}
 
       {rest && <RestTimer {...rest} onChange={endsAt => setRest({ ...rest, endsAt })} onDone={endRest} />}
 

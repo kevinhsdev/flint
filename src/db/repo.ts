@@ -133,3 +133,6 @@ export async function discardSession(id: string) {
     await db.kv.delete(ACTIVE);
   });
 }
+
+/** Apaga um treino do histórico; XP, recordes e medalhas se recalculam sozinhos. */
+export const deleteSession = (id: string) => db.sessions.delete(id);

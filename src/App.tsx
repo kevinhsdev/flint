@@ -4,6 +4,7 @@ import { TabBar } from './ui/TabBar';
 import Routine from './screens/train/Routine';
 import TemplateEditor from './screens/train/TemplateEditor';
 import SessionScreen from './screens/train/Session';
+import History from './screens/train/History';
 
 const Dev = import.meta.env.DEV ? lazy(() => import('./screens/Dev')) : null;
 
@@ -17,7 +18,7 @@ export function Shell() {
         <Route path="/treino" element={<Routine />} />
         <Route path="/treino/editar/:id" element={<TemplateEditor />} />
         <Route path="/treino/sessao" element={<SessionScreen />} />
-        <Route path="/treino/historico" element={<Placeholder title="Histórico" />} />
+        <Route path="/treino/historico" element={<History />} />
         <Route path="/progresso" element={<Placeholder title="Progresso" />} />
         <Route path="/time" element={<Placeholder title="Time" />} />
         {Dev && <Route path="/dev" element={<Dev />} />}

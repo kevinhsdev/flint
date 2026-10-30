@@ -21,6 +21,12 @@ export async function saveSettings(p: Partial<Settings>) {
   await db.kv.put({ key: 'settings', value: { ...(await getSettings()), ...p } });
 }
 
+/** Carga-alvo de um exercício (previsão de meta); null remove. */
+export async function setTarget(exerciseId: string, kg: number | null) {
+  const { [exerciseId]: _old, ...targets } = (await getSettings()).targets;
+  await saveSettings({ targets: kg === null ? targets : { ...targets, [exerciseId]: kg } });
+}
+
 export async function ensureLibrary() {
   if ((await db.exercises.count()) === 0) await db.exercises.bulkAdd(EXERCISES);
 }

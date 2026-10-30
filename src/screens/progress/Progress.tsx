@@ -3,6 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
 import { getSettings } from '../../db/repo';
 import { MUSCLE_NAMES } from '../../domain/exercises';
+import { plateau } from '../../domain/plateau';
 import { exerciseSeries } from '../../domain/progress';
 import { Icon } from '../../ui/Icon';
 import { fmtNum } from '../../ui/NumberField';
@@ -38,10 +39,11 @@ export default function Progress() {
           <ul className="ex-progress">
             {exercises.map(({ e, series }) => {
               const first = series[0].maxKg, last = series.at(-1)!.maxKg;
+              const stuck = plateau(e.id, d.sessions, new Date());
               return (
                 <li key={e.id}>
                   <Link to={`/progresso/exercicio/${e.id}`} aria-label={`${e.name}: ${fmtNum(last)} kg`}>
-                    <span><b>{e.name}</b><small>{MUSCLE_NAMES[e.primary]} · {series.length} {series.length === 1 ? 'treino' : 'treinos'}</small></span>
+                    <span><b>{e.name}{stuck && <i className="badge-stuck">Platô</i>}</b><small>{MUSCLE_NAMES[e.primary]} · {series.length} {series.length === 1 ? 'treino' : 'treinos'}</small></span>
                     <span className="num">{fmtNum(last)} kg{last > first && <small className="down"> +{fmtNum(last - first)}</small>}</span>
                     <Icon name="chev" />
                   </Link>

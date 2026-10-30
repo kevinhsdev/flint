@@ -2,11 +2,15 @@ import { useId, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
+import { getSettings, setTarget } from '../../db/repo';
+import { forecastWeeks } from '../../domain/forecast';
+import { plateau } from '../../domain/plateau';
+import { Mascot } from '../../mascots/Mascot';
 import { parseDay } from '../../domain/dates';
 import { exerciseSeries } from '../../domain/progress';
 import { findPRs } from '../../domain/strength';
 import { Icon } from '../../ui/Icon';
-import { fmtNum } from '../../ui/NumberField';
+import { fmtNum, NumberField } from '../../ui/NumberField';
 
 const W = 320, H = 150, PX = 10, PY = 16;
 
@@ -21,14 +25,15 @@ function smooth(p: [number, number][]) {
   return d;
 }
 
-/** Gráfico de linha + área em SVG. `avg` desenha uma segunda linha (média móvel). */
-export function LineChart({ values, avg, label, unit = 'kg' }: { values: number[]; avg?: number[]; label: string; unit?: string }) {
+/** Gráfico de linha + área em SVG. `avg` desenha uma segunda linha (média móvel); `goal`, a projeção tracejada até a meta. */
+export function LineChart({ values, avg, goal, label, unit = 'kg' }: { values: number[]; avg?: number[]; goal?: number; label: string; unit?: string }) {
   const id = useId();
   if (!values.length) return null;
-  const all = [...values, ...(avg ?? [])];
+  const all = [...values, ...(avg ?? []), ...(goal ? [goal] : [])];
   let lo = Math.min(...all), hi = Math.max(...all);
   if (hi === lo) { hi += 1; lo -= 1; }
-  const x = (i: number) => PX + (values.length === 1 ? (W - 2 * PX) / 2 : (i / (values.length - 1)) * (W - 2 * PX));
+  const slots = values.length + (goal ? 1 : 0); // a meta ganha uma casa à direita
+  const x = (i: number) => PX + (slots === 1 ? (W - 2 * PX) / 2 : (i / (slots - 1)) * (W - 2 * PX));
   const y = (v: number) => PY + (1 - (v - lo) / (hi - lo)) * (H - 2 * PY);
   const pts = values.map((v, i) => [x(i), y(v)] as [number, number]);
   const line = smooth(pts);
@@ -42,6 +47,8 @@ export function LineChart({ values, avg, label, unit = 'kg' }: { values: number[
       {line && <path d={`${line}L${last[0]},${H}L${pts[0][0]},${H}Z`} fill={`url(#a${id})`} />}
       {line && <path d={line} className={avg ? 'raw' : 'ln'} />}
       {avg && <path d={smooth(avg.map((v, i) => [x(i), y(v)]))} className="ln" />}
+      {goal && <line x1={last[0]} y1={last[1]} x2={x(values.length)} y2={y(goal)} className="proj" />}
+      {goal && <circle cx={x(values.length)} cy={y(goal)} r={4} className="pt goal" />}
       {pts.map(([px, py], i) => <circle key={i} data-point cx={px} cy={py} r={i === pts.length - 1 ? 4.5 : 2.6} className={i === pts.length - 1 ? 'pt last' : 'pt'} />)}
       <text x={last[0] - 8} y={last[1] < 28 ? last[1] + 18 : last[1] - 9} className="lbl" textAnchor="end">{fmtNum(values.at(-1)!)}</text>
     </svg>
@@ -55,11 +62,16 @@ export default function ExerciseScreen() {
   const { id = '' } = useParams();
   const nav = useNavigate();
   const [metric, setMetric] = useState<(typeof METRICS)[number][0]>('maxKg');
-  const d = useLiveQuery(async () => ({ ex: await db.exercises.get(id), sessions: await db.sessions.toArray() }), [id]);
+  const d = useLiveQuery(async () => ({ ex: await db.exercises.get(id), sessions: await db.sessions.toArray(), targets: (await getSettings()).targets }), [id]);
   if (!d) return <main className="screen" />;
   const series = exerciseSeries(id, d.sessions);
   const prs = findPRs(d.sessions).filter(p => p.exerciseId === id).reverse();
   const values = series.map(p => Math.round(p[metric] * 10) / 10);
+  const target = d.targets[id] ?? null;
+  const fc = target ? forecastWeeks(series, target, new Date()) : null;
+  const forecast = !target ? null : !fc ? 'Ainda sem tendência clara (treine mais algumas vezes).'
+    : 'reached' in fc ? 'Meta batida!' : `No ritmo atual, ~${fc.weeks} ${fc.weeks === 1 ? 'semana' : 'semanas'}.`;
+  const stuck = plateau(id, d.sessions, new Date());
 
   return (
     <main className="screen">
@@ -74,10 +86,24 @@ export default function ExerciseScreen() {
       <section className="card">
         {series.length ? <>
           <div className="big num">{fmtNum(values.at(-1)!)}<small> kg</small></div>
-          <LineChart values={values} label={METRICS.find(m => m[0] === metric)![1]} />
+          <LineChart values={values} goal={metric === 'maxKg' && fc && 'weeks' in fc ? target! : undefined} label={METRICS.find(m => m[0] === metric)![1]} />
           <div className="axis muted"><span>{day(series[0].day)}</span><span>{day(series.at(-1)!.day)}</span></div>
         </> : <p className="muted">Ainda sem séries concluídas deste exercício.</p>}
       </section>
+      {stuck && (
+        <section className="card stuck-card">
+          <Mascot kind="pedra" size={56} interactive={false} />
+          <p><b>Platô:</b> a carga não sobe há 3 semanas. Faça um deload (−10% por uma semana) ou troque por uma variação no próximo treino.</p>
+        </section>
+      )}
+      {series.length > 0 && (
+        <section className="card">
+          <label className="field"><span>Meta de carga (kg)</span>
+            <NumberField decimal value={target} placeholder="Ex.: 100" onValue={n => { if (n === null || (n > 0 && n <= 1000)) void setTarget(id, n); }} />
+          </label>
+          {forecast && <p className="forecast" role="status">{forecast}</p>}
+        </section>
+      )}
       {prs.length > 0 && (
         <section className="prs">
           <h2>Recordes</h2>

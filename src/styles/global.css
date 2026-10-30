@@ -546,3 +546,17 @@ html { scroll-padding-bottom: calc(180px + var(--safe-bottom)); scroll-padding-t
 .yp-steps b { font-size: 13px; color: var(--crimson); }
 .yp-water { display: flex; align-items: flex-end; justify-content: center; gap: 18px; padding: 8px 0; }
 .yp-hero { display: grid; place-items: center; padding: 20px 0 4px; }
+
+/* aquecimento, platô e previsão */
+.set-row.warm > span:first-child { font-size: 11px; letter-spacing: .04em; color: #FFB27A; }
+.set-row.warm input { opacity: .75; font-weight: 600; }
+.set-row.warm.done { background: rgba(255,140,60,.08); }
+.warm-btn { align-self: flex-start; height: 32px; padding: 0 12px; margin: 0 0 8px; border-radius: 99px; background: rgba(255,106,26,.14); color: #FFB27A; font-size: 13px; font-weight: 750; }
+.warm-btn:active { transform: scale(.96); }
+.badge-stuck { display: inline-flex; align-items: center; height: 22px; padding: 0 8px; margin: 0 8px; border-radius: 99px; background: rgba(160,160,170,.16); color: #C9CBD3; font-size: 11px; font-weight: 750; font-style: normal; letter-spacing: .02em; vertical-align: 2px; }
+.stuck-pedra, .stuck-card { display: flex; align-items: center; gap: 12px; }
+.stuck-pedra { margin-bottom: 8px; }
+.stuck-card p { font-size: 14px; line-height: 1.4; }
+.chart .proj { stroke: var(--crimson); stroke-width: 2; stroke-dasharray: 5 5; opacity: .8; }
+.chart .pt.goal { fill: var(--bg); stroke: var(--crimson); stroke-width: 2; }
+.forecast { font-weight: 700; font-size: 15px; }

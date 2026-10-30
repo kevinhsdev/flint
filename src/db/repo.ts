@@ -1,19 +1,13 @@
 import { db } from './db';
 import { EXERCISES } from '../domain/exercises';
 import { localDay } from '../domain/dates';
-import { RULES } from '../domain/rules';
+import { DEFAULT_SETTINGS } from '../domain/settings';
+import { makeSeed } from '../domain/seed';
 import type { Exercise, Settings, Template } from '../domain/types';
 
 export const uid = () => crypto.randomUUID();
 
-export const DEFAULT_SETTINGS: Settings = {
-  heightCm: null,
-  waterGoalMl: null,
-  trainDays: [...RULES.defaults.trainDays],
-  trainTime: RULES.defaults.trainTime,
-  demo: false,
-  notif: { water: true, train: true, pedra: true, quietStart: RULES.notif.quietStart, quietEnd: RULES.notif.quietEnd },
-};
+export { DEFAULT_SETTINGS };
 
 export async function getSettings(): Promise<Settings> {
   const row = await db.kv.get('settings');
@@ -69,6 +63,27 @@ export async function logWeight(kg: number, day: string) {
 
 export const addPhoto = (blob: Blob, day: string) => db.photos.add({ id: uid(), day, blob });
 export const deletePhoto = (id: string) => db.photos.delete(id);
+
+/** Primeira abertura: biblioteca + dados de exemplo. Nas próximas, não faz nada. */
+export async function boot() {
+  await ensureLibrary();
+  if (await db.kv.get('settings')) return;
+  const s = makeSeed(new Date());
+  await db.transaction('rw', [db.templates, db.sessions, db.water, db.weights, db.kv], async () => {
+    await db.templates.bulkAdd(s.templates);
+    await db.sessions.bulkAdd(s.sessions);
+    await db.water.bulkAdd(s.water);
+    await db.weights.bulkAdd(s.weights);
+    await db.kv.put({ key: 'settings', value: s.settings });
+  });
+}
+
+/** "Começar do zero": apaga tudo e deixa o app vazio, fora do modo demo. */
+export async function startFresh() {
+  await wipeAll();
+  await ensureLibrary();
+  await db.kv.put({ key: 'settings', value: { ...DEFAULT_SETTINGS, demo: false } });
+}
 
 export async function wipeAll() {
   await db.transaction('rw', db.tables, () => Promise.all(db.tables.map(t => t.clear())));

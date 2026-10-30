@@ -8,6 +8,7 @@ import { plateau } from '../../domain/plateau';
 import { findPRs, isWork, suggestOverload, type PR } from '../../domain/strength';
 import { warmupSets } from '../../domain/warmup';
 import type { Exercise, Session, SetLog, Template, TemplateItem } from '../../domain/types';
+import type { StageId } from '../../domain/rules';
 import { Mascot } from '../../mascots/Mascot';
 import type { MascotAct } from '../../mascots/engine';
 import { Icon } from '../../ui/Icon';
@@ -16,7 +17,7 @@ import { Sheet } from '../../ui/Sheet';
 import { ExercisePicker } from './ExercisePicker';
 import { PlateCalc } from './PlateCalc';
 import { RestTimer } from './RestTimer';
-import { Summary } from './Summary';
+import { sharePR, Summary } from './Summary';
 
 const FREE_ITEM = { sets: 3, repMin: 8, repMax: 12, restSec: 90 };
 
@@ -37,7 +38,7 @@ export default function SessionScreen() {
   const [menu, setMenu] = useState(false);
   const [pedra, setPedra] = useState<{ name: MascotAct; key: number }>();
   const [stuck, setStuck] = useState<number | null>(null);
-  const [summary, setSummary] = useState<{ session: Session; prs: PR[]; xp: number } | null>(null);
+  const [summary, setSummary] = useState<{ session: Session; prs: PR[]; xp: number; stage: StageId } | null>(null);
   const once = useRef(false);
 
   const [conflict, setConflict] = useState<{ active: Session; start: string; name: string } | null>(null);
@@ -134,9 +135,10 @@ export default function SessionScreen() {
     await finishSession(s!.id);
     const finished = { ...s!, endedAt: Date.now() };
     const today = new Date();
-    const xp = computeXP({ ...ctx!.game, sessions: [...ctx!.history, finished] }, today).xp - computeXP({ ...ctx!.game, sessions: ctx!.history }, today).xp;
+    const after = computeXP({ ...ctx!.game, sessions: [...ctx!.history, finished] }, today);
+    const xp = after.xp - computeXP({ ...ctx!.game, sessions: ctx!.history }, today).xp;
     setRest(null);
-    setSummary({ session: finished, prs: sessionPRs(finished, ctx!.history), xp });
+    setSummary({ session: finished, prs: sessionPRs(finished, ctx!.history), xp, stage: after.stage });
   }
 
   const addExercises = (ids: string[]) => {
@@ -194,6 +196,11 @@ export default function SessionScreen() {
                 );
               })}
             </div>
+            {!editing && prs.filter(p => p.exerciseId === e.exerciseId).slice(-1).map(p => (
+              <button key="pr" className="share-pr-chip" onClick={() => sharePR(p, ex?.name ?? 'Exercício', computeXP({ ...ctx.game, sessions: [...ctx.history, s] }, now).stage)}>
+                <Icon name="share" /> Compartilhar recorde
+              </button>
+            ))}
             <button className="add-set" onClick={() => update(y => { const sets = y.entries[ei].sets; const l = sets.at(-1); sets.push({ kg: l?.kg ?? 0, reps: 0, done: false }); })}>
               <Icon name="plus" /> Série
             </button>

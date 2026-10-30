@@ -9,6 +9,7 @@ import { MUSCLE_NAMES } from '../../domain/exercises';
 import { computeXP, dailyMedals, goalWeeksStreak, mood, type MedalId } from '../../domain/gamification';
 import { nextTemplate } from '../../domain/routine';
 import { findPRs } from '../../domain/strength';
+import { monthName, monthOf, monthWrapped } from '../../domain/wrapped';
 import type { Exercise, Template } from '../../domain/types';
 import { Mascot } from '../../mascots/Mascot';
 import { WaterCard } from '../../water/WaterCard';
@@ -82,6 +83,8 @@ export default function Today() {
   const lastPR = findPRs(d.sessions).at(-1);
   const medals = dailyMedals(today, game);
   const streak = goalWeeksStreak(d.sessions, d.settings.trainDays, now);
+  // na primeira semana do mês, a retrospectiva do mês anterior
+  const recap = now.getDate() <= 7 && monthWrapped(monthOf(now, -1), game) ? monthOf(now, -1) : null;
   const line = coachLine({ hasRoutine: active.length > 0, trainedToday, isTrainDay, mood: faiscaMood, next: next ? { name: next.name, muscles: musclesOf(next, lib) } : undefined });
 
   return (
@@ -100,6 +103,12 @@ export default function Today() {
         <div className="glow-fire"><Mascot kind="faisca" size={76} stage={stage} mood={faiscaMood} /></div>
         <p className="bubble">{line}</p>
       </div>
+
+      {recap && (
+        <Link to={`/progresso/retrospectiva/${recap}`} className="recap-link">
+          <Icon name="flame" /><span>Sua retrospectiva de {monthName(recap)} está pronta</span><Icon name="chev" />
+        </Link>
+      )}
 
       <div className="goals">
         <Bar label={trainedToday ? 'Treino ✓' : isTrainDay ? 'Treino' : 'Folga'} value={trainedToday || !isTrainDay ? 1 : 0} />

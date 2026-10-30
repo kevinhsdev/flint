@@ -10,18 +10,9 @@ import { APP_NAME, REPO_URL, VERSION } from '../../brand';
 import { Icon } from '../../ui/Icon';
 import { fmtNum, NumberField } from '../../ui/NumberField';
 import { Sheet } from '../../ui/Sheet';
+import { shareFile } from '../../share/share';
 
 const DAYS: [number, string][] = [[1, 'Seg'], [2, 'Ter'], [3, 'Qua'], [4, 'Qui'], [5, 'Sex'], [6, 'Sáb'], [0, 'Dom']];
-
-async function shareOrDownload(blob: Blob, name: string) {
-  const file = new File([blob], name, { type: 'application/json' });
-  if (navigator.canShare?.({ files: [file] })) {
-    try { await navigator.share({ files: [file], title: `Backup do ${APP_NAME}` }); return; } catch (e) { if ((e as Error).name === 'AbortError') return; }
-  }
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob); a.download = name; a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-}
 
 export default function Settings() {
   const nav = useNavigate();
@@ -88,7 +79,7 @@ export default function Settings() {
         <p className="muted">Seus dados ficam só neste aparelho. Exporte de vez em quando pra não perder nada.</p>
         <label className="check-row"><input type="checkbox" checked={photos} onChange={e => setPhotos(e.target.checked)} /> Incluir fotos (arquivo maior)</label>
         <div className="row-2">
-          <button className="btn ghost" onClick={async () => shareOrDownload(await exportBackup(photos), `flint-backup-${localDay(new Date())}.json`)}>Exportar</button>
+          <button className="btn ghost" onClick={async () => shareFile(await exportBackup(photos), `flint-backup-${localDay(new Date())}.json`, `Backup do ${APP_NAME}`)}>Exportar</button>
           <label className="btn ghost file-pick">Importar
             <input type="file" accept="application/json,.json" hidden onChange={async e => {
               const f = e.target.files?.[0]; e.target.value = '';

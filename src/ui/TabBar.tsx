@@ -10,7 +10,7 @@ const TABS: [string, string, IconName][] = [
   ['/time', 'Time', 'spark'],
 ];
 // pesquisa inicial: tela cheia, sem barra (na sessão a barra fica: é a saída para registrar água etc.)
-const HIDDEN = ['/bem-vindo'];
+const HIDDEN = ['/bem-vindo', '/progresso/retrospectiva'];
 
 /** Pílula flutuante de vidro: o destaque desliza com mola e a barra recua ao rolar para baixo. */
 export function TabBar() {

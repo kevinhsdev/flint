@@ -14,6 +14,7 @@ import ExerciseScreen from './screens/progress/ExerciseChart';
 import Team from './screens/team/Team';
 import Settings from './screens/team/Settings';
 import Water from './screens/water/Water';
+import WrappedScreen from './screens/progress/Wrapped';
 import Survey from './screens/welcome/Survey';
 import YourPlan from './screens/welcome/YourPlan';
 
@@ -33,6 +34,7 @@ export function Shell() {
         <Route path="/bem-vindo/plano" element={<YourPlan />} />
         <Route path="/progresso" element={<Progress />} />
         <Route path="/progresso/exercicio/:id" element={<ExerciseScreen />} />
+        <Route path="/progresso/retrospectiva/:month" element={<WrappedScreen />} />
         <Route path="/time" element={<Team />} />
         <Route path="/time/ajustes" element={<Settings />} />
         {Dev && <Route path="/dev" element={<Dev />} />}

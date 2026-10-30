@@ -1,4 +1,4 @@
-import { lazy, useEffect, useState } from 'react';
+import { lazy, useEffect, useRef, useState } from 'react';
 import { HashRouter, Route, Routes, useNavigate } from 'react-router';
 import { boot, getSettings } from './db/repo';
 import { setSoundEnabled } from './ui/sound';
@@ -23,8 +23,13 @@ const Dev = import.meta.env.DEV ? lazy(() => import('./screens/Dev')) : null;
 
 export function Shell({ survey = false }: { survey?: boolean }) {
   const nav = useNavigate();
-  // primeira abertura: a pesquisa, decidida pelo boot antes de o app aparecer
-  useEffect(() => { if (survey) nav('/bem-vindo', { replace: true }); }, [survey, nav]);
+  const sent = useRef(false);
+  // primeira abertura: manda pra pesquisa UMA vez (o `nav` muda a cada navegação; sem o ref, prendia a pessoa na pesquisa)
+  useEffect(() => {
+    if (!survey || sent.current) return;
+    sent.current = true;
+    nav('/bem-vindo', { replace: true });
+  }, [survey, nav]);
   return (
     <div className="app">
       <Routes>

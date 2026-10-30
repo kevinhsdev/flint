@@ -34,6 +34,18 @@ test('primeira abertura cai na pesquisa', async () => {
   expect(await screen.findByText(/Qual é o seu objetivo/, {}, { timeout: 15000 })).toBeInTheDocument();
 });
 
+test('depois da primeira abertura dá pra sair da pesquisa (sem voltar em loop)', async () => {
+  await wipeAll();
+  location.hash = '#/';
+  render(<App />);
+  const user = (await import('@testing-library/user-event')).default.setup();
+  await user.click(await screen.findByRole('button', { name: 'Só quero explorar' }, { timeout: 15000 }));
+  expect(await screen.findByText(/Dados de exemplo/, {}, { timeout: 15000 })).toBeInTheDocument();
+  await new Promise(r => setTimeout(r, 300)); // tempo pra um redirecionamento indevido acontecer
+  expect(screen.queryByText(/Qual é o seu objetivo/)).toBeNull();
+  expect(location.hash).toBe('#/');
+});
+
 test('responder tudo gera rotina, água e peso', async () => {
   await startFresh();
   const { user } = renderAt('/bem-vindo');

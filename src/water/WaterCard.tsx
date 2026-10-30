@@ -1,14 +1,14 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { createWaterSim, type WaterSim } from './waterSim';
 import { Sheet } from '../ui/Sheet';
 import { Icon } from '../ui/Icon';
 
-interface Props { ml: number; goal: number; onAdd(ml: number): void; onUndo(): void }
+interface Props { ml: number; goal: number; onAdd(ml: number): void; onUndo(): void; badge?: ReactNode }
 
 const liters = (ml: number) => (ml / 1000).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 });
 const LONG_PRESS = 450;
 
-export function WaterCard({ ml, goal, onAdd, onUndo }: Props) {
+export function WaterCard({ ml, goal, onAdd, onUndo, badge }: Props) {
   const cv = useRef<HTMLCanvasElement>(null);
   const sim = useRef<WaterSim>(null);
   const timer = useRef(0), held = useRef(false);
@@ -42,7 +42,7 @@ export function WaterCard({ ml, goal, onAdd, onUndo }: Props) {
         onContextMenu={e => e.preventDefault()}
       >
         <canvas ref={cv} className="liquid" aria-hidden="true" />
-        <div className="k">Água</div>
+        <div className="k">Água{badge && <span className="badge">{badge}</span>}</div>
         <div className="v num">{liters(ml)}<small> / {liters(goal)} L</small></div>
         <div className="s">toque +250 ml</div>
         <span className="add" aria-hidden="true"><Icon name="plus" /></span>

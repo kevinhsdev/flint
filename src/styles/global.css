@@ -252,3 +252,74 @@ input { min-width: 0; }
 .hist-meta { display: flex; gap: 12px; font-size: 13px; color: var(--text); }
 .gold { color: var(--gold-hi); font-weight: 700; }
 .hist-ex { color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* hoje */
+.today { display: grid; gap: 14px; align-content: start; }
+.demo { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 8px 8px 14px; border-radius: 16px;
+  background: rgba(245,183,0,.1); box-shadow: inset 0 0 0 1px rgba(245,183,0,.28); font-size: 13px; color: var(--gold-hi); font-weight: 650; }
+.demo button { height: 34px; padding: 0 12px; border-radius: 11px; background: var(--gold); color: #2A1E00; font-weight: 750; font-size: 13px; }
+.demo button:active { transform: scale(.96); }
+.hd { display: flex; justify-content: space-between; align-items: flex-start; }
+.hd .d { font-size: 13px; color: var(--muted); }
+.hd .d::first-letter { text-transform: uppercase; }
+.hd h1 { font-size: 28px; font-weight: 820; font-stretch: 112%; letter-spacing: -.03em; line-height: 1.05; margin: 4px 0 0; }
+.streak { display: flex; align-items: center; gap: 5px; height: 34px; padding: 0 12px 0 9px; border-radius: 99px;
+  background: linear-gradient(180deg, rgba(245,183,0,.16), rgba(245,183,0,.06)); box-shadow: inset 0 0 0 1px rgba(245,183,0,.22);
+  color: var(--gold-hi); font-weight: 750; font-size: 15px; }
+.streak .icon { width: 17px; height: 17px; stroke: var(--gold); }
+.coach { display: flex; align-items: center; gap: 6px; margin: -4px 0 -2px; }
+.coach .bubble { font-size: 14px; }
+.glow-fire { filter: drop-shadow(0 10px 18px rgba(255,90,31,.45)); }
+.glow-steel { filter: drop-shadow(0 10px 14px rgba(0,0,0,.6)); }
+.goals { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.goal { font-size: 12px; color: var(--muted); }
+.goal b { display: block; color: var(--text); font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+.goal .t { height: 6px; border-radius: 9px; background: var(--surface-2); overflow: hidden; }
+.goal .t i { display: block; height: 100%; border-radius: 9px; background: var(--crimson); transition: width 600ms var(--ease-out); }
+.goal.w .t i { background: linear-gradient(90deg, #2F6FE6, #6AA2FF); }
+.hero-cta { display: block; border-radius: 26px; padding: 18px; color: #fff; position: relative; overflow: hidden; text-decoration: none;
+  background: radial-gradient(120% 140% at 100% 0%, #FF4D6D 0%, #E5163E 38%, #7D0A22 100%);
+  box-shadow: 0 18px 40px -16px rgba(229,22,62,.75), inset 0 1px 0 rgba(255,255,255,.25); }
+.hero-cta::after { content: ""; position: absolute; right: -30px; bottom: -40px; width: 180px; height: 180px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,.14), transparent 65%); pointer-events: none; }
+.hero-cta .k { font-size: 13px; opacity: .8; font-weight: 600; }
+.hero-cta h2 { font-size: 24px; font-weight: 850; font-stretch: 115%; letter-spacing: -.025em; margin: 2px 0 0; }
+.hero-cta .s { font-size: 13px; opacity: .78; margin-top: 2px; }
+.hero-cta .row { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; position: relative; z-index: 1; }
+.chips { display: flex; gap: 6px; align-items: center; }
+.chips span, .swap { white-space: nowrap; font-size: 11.5px; font-weight: 650; padding: 5px 9px; border-radius: 99px; background: rgba(0,0,0,.22); color: #fff; }
+.swap { height: 28px; }
+.btn-white { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 16px 0 13px; border-radius: 99px;
+  background: #fff; color: #7D0A22; font-weight: 750; font-size: 14px; box-shadow: 0 6px 16px -6px rgba(0,0,0,.5); transition: transform 140ms var(--ease-out); }
+.btn-white:active { transform: scale(.96); }
+.btn-white .icon { width: 15px; height: 15px; fill: currentColor; stroke: none; }
+.water .badge { position: absolute; right: -4px; top: -10px; }
+.water .k { position: relative; }
+.tile.weight { text-align: left; width: 100%; transition: transform 160ms var(--ease-out); }
+.tile.weight:active { transform: scale(.98); }
+.bars { display: flex; align-items: flex-end; gap: 5px; height: 30px; margin-top: 10px; }
+.bars i { flex: 1; border-radius: 4px; background: var(--surface-2); }
+.bars i:last-child { background: var(--crimson); }
+.down { color: #7FE3A6; font-size: 12px; font-weight: 700; }
+.up { color: var(--gold-hi); font-size: 12px; font-weight: 700; }
+.tile.pr { display: flex; align-items: center; gap: 10px; padding: 8px 14px 8px 6px; text-decoration: none; }
+.pr .t { font-size: 14px; font-weight: 700; }
+.pr .s { margin-top: 1px; font-size: 12px; color: var(--muted); }
+.pr .s b { color: var(--gold); font-weight: 700; }
+.pr .chev { margin-left: auto; color: var(--faint); width: 18px; height: 18px; flex: none; }
+.medals-today { display: flex; gap: 8px; flex-wrap: wrap; }
+.medal-chip { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px 0 9px; border-radius: 99px; font-size: 13px; font-weight: 700;
+  color: var(--gold-hi); background: rgba(245,183,0,.1); box-shadow: inset 0 0 0 1px rgba(245,183,0,.25); }
+.medal-chip .icon { width: 16px; height: 16px; stroke: var(--gold); }
+
+/* carregamento */
+.loading { position: fixed; inset: 0; z-index: 100; display: grid; place-content: center; justify-items: center; gap: 10px; background: var(--bg);
+  transition: opacity 260ms var(--ease-out); }
+.loading.out { opacity: 0; pointer-events: none; }
+.loading-mark { border-radius: 22px; animation: pop 500ms var(--ease-out) both; }
+.loading-word { font-size: 30px; font-weight: 900; font-stretch: 125%; letter-spacing: -.04em; animation: pop 500ms 80ms var(--ease-out) both; }
+.loading-crew { display: flex; align-items: flex-end; gap: 2px; margin-top: 18px; }
+.loading-crew > span { animation: enter 520ms var(--ease-out) both; }
+@keyframes pop { from { opacity: 0; transform: scale(.9); } }
+@keyframes enter { from { opacity: 0; transform: translateY(18px) scale(.94); } }
+@media (prefers-reduced-motion: reduce) { .loading-mark, .loading-word, .loading-crew > span { animation: none; } }

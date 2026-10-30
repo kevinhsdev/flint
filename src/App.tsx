@@ -1,4 +1,7 @@
-import { lazy } from 'react';
+import { lazy, useEffect, useState } from 'react';
+import { boot } from './db/repo';
+import { LoadingScreen } from './ui/LoadingScreen';
+import Today from './screens/today/Today';
 import { HashRouter, Route, Routes } from 'react-router';
 import { TabBar } from './ui/TabBar';
 import Routine from './screens/train/Routine';
@@ -14,7 +17,7 @@ export function Shell() {
   return (
     <div className="app">
       <Routes>
-        <Route path="/" element={<Placeholder title="Hoje" />} />
+        <Route path="/" element={<Today />} />
         <Route path="/treino" element={<Routine />} />
         <Route path="/treino/editar/:id" element={<TemplateEditor />} />
         <Route path="/treino/sessao" element={<SessionScreen />} />
@@ -28,10 +31,21 @@ export function Shell() {
   );
 }
 
+const MIN_LOADING_MS = 700;
+
 export default function App() {
+  const [phase, setPhase] = useState<'loading' | 'leaving' | 'ready'>('loading');
+  useEffect(() => {
+    // o carregamento fica pelo menos um instante, pra não piscar
+    Promise.all([boot(), new Promise(r => setTimeout(r, MIN_LOADING_MS))]).then(() => {
+      setPhase('leaving');
+      setTimeout(() => setPhase('ready'), 260);
+    });
+  }, []);
   return (
     <HashRouter>
-      <Shell />
+      {phase !== 'ready' && <LoadingScreen leaving={phase === 'leaving'} />}
+      {phase !== 'loading' && <Shell />}
     </HashRouter>
   );
 }

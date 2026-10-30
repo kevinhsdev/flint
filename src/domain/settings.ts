@@ -12,4 +12,5 @@ export const DEFAULT_SETTINGS: Settings = {
   profile: null,
   sound: true,
   targets: {},
+  theme: 'auto',
 };

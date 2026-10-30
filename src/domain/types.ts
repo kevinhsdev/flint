@@ -28,6 +28,8 @@ export interface Session {
 export interface WaterLog { id: string; day: string; at: number; ml: number }
 export interface WeightLog { id: string; day: string; kg: number }
 export interface Photo { id: string; day: string; blob: Blob }
+export type ThemePref = 'auto' | 'light' | 'dark';
+
 export interface Settings {
   heightCm: number | null;
   waterGoalMl: number | null;
@@ -40,4 +42,5 @@ export interface Settings {
   sound: boolean;
   /** carga-alvo por exercício (previsão de meta) */
   targets: Record<string, number>;
+  theme: ThemePref;
 }

@@ -6,7 +6,7 @@
 
 App de academia feito para o iPhone, instalável pela tela de início. Ele é pensado para o meio do treino: abrir, marcar a série, descansar e seguir.
 
-**Demo:** https://kevinhs07.github.io/flint/. No iPhone, abra no Safari e toque em *Compartilhar → Adicionar à Tela de Início*.
+**Demo:** https://kevinhsdev.github.io/flint/. No iPhone, abra no Safari e toque em *Compartilhar → Adicionar à Tela de Início*.
 
 <p align="center">
   <img src="docs/media/hoje.png" width="200" alt="Tela Hoje">

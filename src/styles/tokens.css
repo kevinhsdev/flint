@@ -1,0 +1,12 @@
+:root {
+  color-scheme: dark;
+  --bg: #0E0A12; --surface: #17111D; --surface-2: #211929; --line: rgba(255,235,245,.07);
+  --text: #F5F0F7; --muted: #A193AA; --faint: #6E6177;
+  --crimson: #E5163E; --crimson-hi: #FF4D6D; --crimson-lo: #8E0B26;
+  --gold: #F5B700; --gold-hi: #FFE38A; --water: #3B82F6; --water-hi: #8CB8FF;
+  --ease-out: cubic-bezier(.23, 1, .32, 1);
+  --ease-drawer: cubic-bezier(.32, .72, 0, 1);
+  --font: "Archivo Variable", system-ui, sans-serif;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}

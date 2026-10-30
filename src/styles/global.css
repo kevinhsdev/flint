@@ -1,0 +1,45 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--bg); }
+body {
+  color: var(--text); font-family: var(--font); -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent; overscroll-behavior: none;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; border: 0; background: none; }
+a { color: inherit; text-decoration: none; }
+::selection { background: var(--crimson); color: #fff; }
+.num { font-variant-numeric: tabular-nums; }
+.icon { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+/* desktop: o app fica com largura de celular, centralizado */
+.app { max-width: 430px; min-height: 100dvh; margin: 0 auto; position: relative; background: var(--bg); }
+@media (min-width: 600px) {
+  body { background: radial-gradient(80% 50% at 50% 0%, #1d0b16, #060407 70%); }
+  .app { box-shadow: 0 0 0 1px var(--line), 0 40px 120px -30px rgba(229,22,62,.25); }
+}
+
+.screen {
+  padding: calc(var(--safe-top) + 20px) 18px calc(var(--safe-bottom) + 96px);
+  display: flex; flex-direction: column; gap: 12px; position: relative;
+}
+.screen::before {
+  content: ""; position: absolute; inset: 0 0 auto; height: 340px; pointer-events: none;
+  background: radial-gradient(90% 70% at 70% -10%, rgba(229,22,62,.20), transparent 70%);
+}
+.screen > * { position: relative; }
+.title { font-size: 28px; font-weight: 820; font-stretch: 112%; letter-spacing: -.03em; line-height: 1.05; }
+
+.tabbar {
+  position: fixed; bottom: 0; left: 50%; translate: -50% 0; width: 100%; max-width: 430px; z-index: 20;
+  padding: 10px 22px calc(var(--safe-bottom) + 12px); display: flex; justify-content: space-between;
+  background: linear-gradient(180deg, rgba(14,10,18,.55), rgba(14,10,18,.92));
+  backdrop-filter: blur(24px) saturate(160%); -webkit-backdrop-filter: blur(24px) saturate(160%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+}
+.tabbar a { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 650; color: var(--faint); width: 64px; transition: transform 140ms var(--ease-out); }
+.tabbar a:active { transform: scale(.94); }
+.tabbar a.on { color: var(--crimson-hi); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 1ms !important; animation-duration: 1ms !important; }
+}

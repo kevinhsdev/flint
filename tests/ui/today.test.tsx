@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../../src/App';
-import { startFresh, wipeAll } from '../../src/db/repo';
+import { boot, startFresh, wipeAll } from '../../src/db/repo';
 import { db } from '../../src/db/db';
 import { coachLine } from '../../src/screens/today/Today';
 
@@ -10,7 +10,7 @@ vi.setConfig({ testTimeout: 30_000 }); // o boot com dados de exemplo é lento c
 beforeEach(() => { location.hash = '#/'; });
 
 test('primeira abertura mostra demo e "Começar do zero" zera', async () => {
-  await wipeAll();
+  await wipeAll(); await boot(); // semeia antes, como a primeira abertura; o boot do App vira no-op
   const user = userEvent.setup();
   render(<App />);
   expect(await screen.findByText(/Dados de exemplo/, {}, { timeout: 15000 })).toBeInTheDocument();

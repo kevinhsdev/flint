@@ -427,3 +427,7 @@ input[type="time"] { height: 48px; border-radius: 14px; border: 0; background: v
 .check-row { display: flex; align-items: center; gap: 10px; font-size: 14px; }
 .check-row input { width: 20px; height: 20px; accent-color: var(--crimson); }
 .danger-text { color: var(--crimson-hi); width: 100%; }
+
+/* iOS: input < 16px dá zoom ao focar; campo focado fica acima do descanso e da tab bar */
+input, select, textarea { font-size: 16px; }
+html { scroll-padding-bottom: calc(180px + var(--safe-bottom)); scroll-padding-top: calc(var(--safe-top) + 12px); }

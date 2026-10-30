@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Flint — OG</title>
+<style>
+  html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; background: #0E0A12; }
+  body { position: relative; font-family: "Archivo Variable", system-ui, sans-serif; color: #F5F0F7; -webkit-font-smoothing: antialiased; }
+  .glow { position: absolute; inset: 0; background:
+    radial-gradient(60% 80% at 78% 60%, rgba(229,22,62,.32), transparent 70%),
+    radial-gradient(40% 50% at 10% 0%, rgba(229,22,62,.18), transparent 70%); }
+  .left { position: absolute; left: 88px; top: 0; bottom: 0; display: flex; flex-direction: column; justify-content: center; gap: 18px; }
+  .brand { display: flex; align-items: center; gap: 22px; }
+  .brand img { width: 112px; height: 112px; border-radius: 28px; box-shadow: 0 20px 50px -18px rgba(229,22,62,.8); }
+  h1 { color: #F5F0F7; margin: 0; font-size: 132px; line-height: .9; font-weight: 900; font-stretch: 125%; letter-spacing: -.045em; }
+  h1 i { font-style: normal; color: #E5163E; }
+  p { margin: 0; font-size: 30px; line-height: 1.3; color: #A193AA; max-width: 16.5em; font-weight: 500; }
+  p b { color: #F5F0F7; font-weight: 700; }
+  .crew { position: absolute; right: 70px; bottom: 70px; display: flex; align-items: flex-end; gap: 0; }
+  .crew > div { filter: drop-shadow(0 22px 30px rgba(0,0,0,.55)); }
+</style>
+</head>
+<body>
+<div class="glow"></div>
+<div class="left">
+  <div class="brand"><img src="/brand/flint-logo.svg" alt=""><h1>Flint<i>.</i></h1></div>
+  <p>Treino, água e evolução — com <b>Faísca</b>, <b>Gota</b> e <b>Pedra</b> do seu lado.</p>
+</div>
+<div class="crew"><div id="g"></div><div id="f"></div><div id="p"></div></div>
+<script type="module">
+  import '@fontsource-variable/archivo/standard.css';
+  import '/src/styles/tokens.css';
+  import '/src/styles/global.css';
+  import { mountMascot } from '/src/mascots/engine.js';
+  const put = (id, kind, w, stage) => { const el = document.getElementById(id); el.style.cssText = `width:${w}px;height:${w * 4 / 3}px`; mountMascot(el, kind, { stage, interactive: false }); };
+  document.body.style.background = '#0E0A12';
+  put('g', 'gota', 170); put('f', 'faisca', 250, 'chama'); put('p', 'pedra', 170);
+</script>
+</body>
+</html>

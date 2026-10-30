@@ -33,5 +33,8 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['tests/setup.ts'],
+    // telas que abrem o banco ficam lentas com muitos arquivos jsdom em paralelo
+    testTimeout: 30_000,
+    maxWorkers: 4,
   },
 });

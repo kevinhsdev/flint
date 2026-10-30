@@ -140,18 +140,32 @@ const CHARS = {
   gota: {
     kind: 'gota',
     R: 42, top: 80, headY: -44, shoulders: 16,
-    body: ['#A6DBFF', '#3B82F6'], belly: '#DDF3FF', limb: '#2363D9', limbHi: '#A6DBFF', foot: '#1A4FB8', ol: '#1C47B0',
-    face: { ey: 9, my: 27, ex: 17, ink: '#0B1B45', cheek: '#F9A8D4' },
+    body: ['#A6DBFF', '#14B8E6'], belly: '#DDF3FF', limb: '#0A93C4', limbHi: '#8FE9F8', foot: '#07759E', ol: '#065E80',
+    face: { ey: 9, my: 27, ex: 17, ink: '#03344A', cheek: '#F9A8D4' },
     behaviors: ['gotinha', 'balanco', 'look', 'look', 'fidget', 'danca'],
     specials: ['gotinha', 'balanco'],
+    // água de verdade: corpo ciano com superfície ondulando dentro e brilho branco, longe do azul da Forja
     head: id => `
-      <use href="#o${id}" fill="#3B8BFF"/>
-      ${flat(id, '#3B8BFF', '#2363D9')}
-      <g data-r="drip"><path d="M0 -9Q6 -1 6 3A6 6 0 0 1 -6 3Q-6 -1 0 -9Z" fill="#3B8BFF"/></g>`,
+      <use href="#o${id}" fill="#8FE9F8"/>
+      <g clip-path="url(#cl${id})">
+        <path data-r="wave" fill="#14B8E6"/>
+        <path data-r="wave2" fill="#0A93C4" opacity=".55"/>
+      </g>
+      <path d="M-27 -2Q-30 -16 -20 -27" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round" opacity=".9"/>
+      <circle cx="-28" cy="8" r="2.6" fill="#fff" opacity=".9"/>
+      <g data-r="drip"><path d="M0 -9Q6 -1 6 3A6 6 0 0 1 -6 3Q-6 -1 0 -9Z" fill="#14B8E6"/></g>`,
     frame(s, t, r) {
       const j = s.jelly.a, k = s.flare.a * (1 + clamp(s.vy * .0006, -.2, .3));
       const wob = th => s.M * (.028 + j) * Math.sin(3 * th + t * 2.4 * s.speed) + s.M * (.016 + j * .6) * Math.sin(5 * th - t * 3.3);
       r.o.setAttribute('d', blob(this.R, [{ a: .3, w: .8, h: 34 * k, curl: -15 }], wob, clamp(-s.yaw.v * .35 - s.rot.v * .02 - s.vx * .0015, -.8, .8)));
+      // a água balança contra o movimento do corpo, como num copo
+      const tilt = clamp(s.vx * .02 + s.rot.a * .9 + s.yaw.a * 14, -16, 16), lvl = -12 + clamp(s.vy * .008, -6, 6);
+      const surf = (amp, ph, dy) => {
+        let d = `M-70 ${f1(lvl + dy + tilt)}`;
+        for (let x = -70; x <= 70; x += 10) d += `L${x} ${f1(lvl + dy - tilt * x / 70 + amp * Math.sin(x / 11 + t * 3.2 * s.speed + ph) * (s.M || .4))}`;
+        return d + 'L70 90L-70 90Z';
+      };
+      r.wave.setAttribute('d', surf(2.6, 0, 0)); r.wave2.setAttribute('d', surf(2, 2.4, 16));
       let dx = 34 + Math.sin(t * 1.3) * 3, dy = -62 + Math.sin(t * 2.1) * 5 * s.M - s.vy * .01, op = 1;
       if (s.drip) { dx = s.drip.x; dy = s.drip.y; op = s.drip.op; }
       r.drip.setAttribute('transform', `translate(${f1(dx)} ${f1(dy)})`); r.drip.setAttribute('opacity', op);
@@ -190,6 +204,46 @@ const CHARS = {
       // brotinho: movimento secundário que atrasa
       s.leaf.T = clamp(-s.yaw.v * 18 - s.vx * .03 + s.vy * .01, -40, 40) + s.M * 4 * Math.sin(t * 1.7);
       r.sprout.setAttribute('transform', `translate(${f1(C[0] * .3)} -42) rotate(${f1(s.leaf.a)})`);
+    },
+  },
+  // Pedra, versão B: seixo liso e chapado, com musgo e uma rachadura; mesmo repertório da Pedra
+  seixo: {
+    kind: 'pedra',
+    R: 46, top: 60, headY: -46, shoulders: 17,
+    body: ['#A9B4B0', '#66716F'], belly: '#C8D1CD', limb: '#5E6967', limbHi: '#B9C3BF', foot: '#4A5452', ol: '#3D4644', hw: 9,
+    face: { ey: 9, my: 27, ex: 18, ink: '#1F2624', cheek: '#FF9A8A' },
+    behaviors: ['rosca', 'flex', 'look', 'look', 'fidget', 'danca'],
+    specials: ['rosca', 'flex'],
+    head: id => `
+      <use href="#o${id}" fill="#8E9A96"/>
+      ${flat(id, '#8E9A96', '#6A7572')}
+      <g clip-path="url(#cl${id})"><path data-r="moss" fill="#4FB862"/><path data-r="moss2" fill="#3E9E50"/></g>
+      <path d="M26 -14l-6 8 4 5-5 7" stroke="#55605D" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <g data-r="sprout" transform="translate(0 -40)">
+        <path d="M0 0Q-1 -8 1 -14" stroke="#3E9E50" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+        <path data-r="leafL" d="M1 -12Q-10 -22 -18 -14Q-9 -8 1 -12Z" fill="#5BC86B"/><path d="M1 -12Q-9 -16 -16 -14" stroke="#3E9E50" stroke-width="1" fill="none" opacity=".6"/>
+        <path data-r="leafR" d="M1 -14Q10 -27 20 -20Q11 -12 1 -14Z" fill="#7BDC86"/><path d="M1 -14Q10 -20 18 -20" stroke="#3E9E50" stroke-width="1" fill="none" opacity=".6"/>
+      </g>`,
+    frame(s, t, r) {
+      const R = this.R, sq = s.M * .015 * Math.sin(t * 1.6);
+      // seixo: superelipse achatada, um pouco mais larga embaixo
+      const pts = [];
+      for (let i = 0; i < 48; i++) {
+        const a = i / 48 * TAU, c = Math.cos(a), sn = Math.sin(a), e = .86;
+        const x = Math.sign(c) * Math.pow(Math.abs(c), e) * R * 1.08 * (1 + (sn > 0 ? .04 * sn : 0)), y = Math.sign(sn) * Math.pow(Math.abs(sn), e) * R * (.9 + sq);
+        pts.push([x, y + 4]);
+      }
+      r.o.setAttribute('d', smooth(pts));
+      // musgo: tampa irregular no topo que gira com o rosto
+      const off = Math.sin(s.yaw.a) * R * .4, top = -R * .9 + 4;
+      let m = `M${f1(-R * 1.2 + off)} -90`, m2 = m;
+      for (let x = -60; x <= 60; x += 6) {
+        const y = top + 12 + 5 * Math.sin(x * .35 + 1) + 3 * Math.sin(x * .9);
+        m += `L${f1(x + off)} ${f1(y)}`; m2 += `L${f1(x + off)} ${f1(y - 6 + 2 * Math.sin(x * .5))}`;
+      }
+      r.moss.setAttribute('d', m + 'L70 -90Z'); r.moss2.setAttribute('d', m2 + 'L70 -90Z');
+      s.leaf.T = clamp(-s.yaw.v * 18 - s.vx * .03 + s.vy * .01, -40, 40) + s.M * 4 * Math.sin(t * 1.7);
+      r.sprout.setAttribute('transform', `translate(${f1(off * .6)} -40) rotate(${f1(s.leaf.a)})`);
     },
   },
 };

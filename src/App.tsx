@@ -1,19 +1,19 @@
 import { lazy, useEffect, useState } from 'react';
+import { HashRouter, Route, Routes } from 'react-router';
 import { boot } from './db/repo';
 import { LoadingScreen } from './ui/LoadingScreen';
-import Today from './screens/today/Today';
-import { HashRouter, Route, Routes } from 'react-router';
 import { TabBar } from './ui/TabBar';
+import Today from './screens/today/Today';
 import Routine from './screens/train/Routine';
 import TemplateEditor from './screens/train/TemplateEditor';
 import SessionScreen from './screens/train/Session';
 import History from './screens/train/History';
 import Progress from './screens/progress/Progress';
 import ExerciseScreen from './screens/progress/ExerciseChart';
+import Team from './screens/team/Team';
+import Settings from './screens/team/Settings';
 
 const Dev = import.meta.env.DEV ? lazy(() => import('./screens/Dev')) : null;
-
-const Placeholder = ({ title }: { title: string }) => <main className="screen"><h1 className="title">{title}</h1></main>;
 
 export function Shell() {
   return (
@@ -26,7 +26,8 @@ export function Shell() {
         <Route path="/treino/historico" element={<History />} />
         <Route path="/progresso" element={<Progress />} />
         <Route path="/progresso/exercicio/:id" element={<ExerciseScreen />} />
-        <Route path="/time" element={<Placeholder title="Time" />} />
+        <Route path="/time" element={<Team />} />
+        <Route path="/time/ajustes" element={<Settings />} />
         {Dev && <Route path="/dev" element={<Dev />} />}
       </Routes>
       <TabBar />

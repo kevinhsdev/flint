@@ -70,7 +70,7 @@ export function goalWeeksStreak(sessions: Session[], trainDays: number[], today:
   return streak + ((perWeek.get(current) ?? 0) >= goal ? 1 : 0);
 }
 
-const allDays = (d: GameData, today: Date) => {
+export const allDays = (d: GameData, today: Date) => {
   const days = [...done(d.sessions).map(dayOf), ...d.water.map(w => w.day)].filter(x => x <= localDay(today));
   return [...new Set(days)].sort();
 };

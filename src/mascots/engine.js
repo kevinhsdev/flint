@@ -108,16 +108,6 @@ function flame(R, k, t, M, sway, f) {
   }
   return d + `C${P(.88, -.6)} ${P(.98, -.24)} ${P(1, .24)}C${P(1.03, .72)} ${P(.5, 1)} ${P(0, 1.06)}Z`;
 }
-// pedra low-poly: contorno fixo, facetas recalculadas a partir de um "ápice" que gira com o rosto
-const ROCK = [[-90, 47], [-48, 44], [-8, 47], [32, 43], [74, 46], [118, 42], [160, 45], [205, 43], [240, 46]].map(([a, r]) => {
-  const t = a * Math.PI / 180; return [Math.cos(t) * r, Math.sin(t) * r * .9];
-});
-const LIGHT = (() => { const l = [-.45, -.65, .62], n = Math.hypot(...l); return l.map(v => v / n); })();
-const mixHex = (a, b, k) => {
-  const p = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)), A = p(a), B = p(b);
-  return '#' + A.map((v, i) => Math.round(lerp(v, B[i], k)).toString(16).padStart(2, '0')).join('');
-};
-
 const CHARS = {
   faisca: {
     kind: 'faisca', ...STAGES.faisca,
@@ -171,43 +161,8 @@ const CHARS = {
       r.drip.setAttribute('transform', `translate(${f1(dx)} ${f1(dy)})`); r.drip.setAttribute('opacity', op);
     },
   },
+  // seixo liso e chapado, com musgo e uma rachadura (a versão facetada está em docs/reference/mascots-v1)
   pedra: {
-    kind: 'pedra',
-    R: 46, top: 64, headY: -48, shoulders: 17,
-    body: ['#A9B4B0', '#66716F'], belly: '#C8D1CD', limb: '#66716F', limbHi: '#B9C3BF', foot: '#4F5957', ol: '#3D4644', hw: 9,
-    face: { ey: 9, my: 28, ex: 18, ink: '#1F2624', cheek: '#FF9A8A' },
-    behaviors: ['rosca', 'flex', 'look', 'look', 'fidget', 'danca'],
-    specials: ['rosca', 'flex'],
-    head: id => `
-      <use href="#o${id}" fill="#7E8986" stroke="#7E8986" stroke-width="9" stroke-linejoin="round"/>
-      <g data-r="facets" stroke-linejoin="round"></g>
-      <g data-r="sprout" transform="translate(0 -42)">
-        <path d="M0 0Q-1 -8 1 -14" stroke="#3E9E50" stroke-width="2.6" fill="none" stroke-linecap="round"/>
-        <path data-r="leafL" d="M1 -12Q-10 -22 -18 -14Q-9 -8 1 -12Z" fill="#5BC86B"/><path d="M1 -12Q-9 -16 -16 -14" stroke="#3E9E50" stroke-width="1" fill="none" opacity=".6"/>
-        <path data-r="leafR" d="M1 -14Q10 -27 20 -20Q11 -12 1 -14Z" fill="#7BDC86"/><path d="M1 -14Q10 -20 18 -20" stroke="#3E9E50" stroke-width="1" fill="none" opacity=".6"/>
-      </g>`,
-    init(s, r) {
-      r.o.setAttribute('d', 'M' + ROCK.map(p => p.map(f1).join(' ')).join('L') + 'Z');
-      r.facets.innerHTML = ROCK.map(() => '<path/>').join('');
-    },
-    frame(s, t, r) {
-      // ápice segue o giro: as facetas mudam de luz como um objeto 3D
-      const R = this.R, C = [Math.sin(s.yaw.a) * R * .55, -R * .08 + Math.sin(s.pitch.a) * R * .4];
-      [...r.facets.children].forEach((el, i) => {
-        const A = ROCK[i], B = ROCK[(i + 1) % ROCK.length], M = [(A[0] + B[0]) / 2 - C[0], (A[1] + B[1]) / 2 - C[1]], ml = Math.hypot(...M) || 1;
-        const n = [M[0] / ml * .85, M[1] / ml * .85, .55], nl = Math.hypot(...n);
-        const b = clamp((n[0] * LIGHT[0] + n[1] * LIGHT[1] + n[2] * LIGHT[2]) / nl, 0, 1);
-        const c = mixHex('#5E6967', '#B4BFBB', Math.round(Math.pow(b, 1.25) * 3) / 3);
-        el.setAttribute('d', `M${f1(C[0])} ${f1(C[1])}L${f1(A[0])} ${f1(A[1])}L${f1(B[0])} ${f1(B[1])}Z`);
-        el.setAttribute('fill', c); el.setAttribute('stroke', c); el.setAttribute('stroke-width', '1.2');
-      });
-      // brotinho: movimento secundário que atrasa
-      s.leaf.T = clamp(-s.yaw.v * 18 - s.vx * .03 + s.vy * .01, -40, 40) + s.M * 4 * Math.sin(t * 1.7);
-      r.sprout.setAttribute('transform', `translate(${f1(C[0] * .3)} -42) rotate(${f1(s.leaf.a)})`);
-    },
-  },
-  // Pedra, versão B: seixo liso e chapado, com musgo e uma rachadura; mesmo repertório da Pedra
-  seixo: {
     kind: 'pedra',
     R: 46, top: 60, headY: -46, shoulders: 17,
     body: ['#A9B4B0', '#66716F'], belly: '#C8D1CD', limb: '#5E6967', limbHi: '#B9C3BF', foot: '#4A5452', ol: '#3D4644', hw: 9,

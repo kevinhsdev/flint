@@ -35,14 +35,14 @@
   import '@fontsource-variable/archivo/standard.css';
   import { mountMascot } from '/src/mascots/engine.js';
   import { mountMascot as mountOld } from '/docs/reference/mascots-v1/engine.js';
-  const LIST = [['faisca', 'faisca', 'Faísca'], ['faisca', 'chama', 'Chama'], ['faisca', 'fogueira', 'Fogueira'], ['faisca', 'forja', 'Forja'], ['gota', null, 'Gota'], ['pedra', null, 'Pedra A (facetada)'], ['seixo', null, 'Pedra B (seixo)']];
+  const LIST = [['faisca', 'faisca', 'Faísca'], ['faisca', 'chama', 'Chama'], ['faisca', 'fogueira', 'Fogueira'], ['faisca', 'forja', 'Forja'], ['gota', null, 'Gota'], ['pedra', null, 'Pedra']];
   const put = (row, mount) => LIST.map(([kind, stage, name]) => {
     const fig = document.createElement('figure'), el = document.createElement('div');
     el.style.cssText = 'width:150px;height:200px';
     fig.append(el); fig.insertAdjacentHTML('beforeend', `<figcaption>${name}</figcaption>`); document.getElementById(row).append(fig);
     return mount(el, kind, { stage: stage ?? undefined });
   });
-  const hs = put('v2', mountMascot); put('v1', (el, k, o) => k === 'seixo' ? { act() {}, setMood() {} } : mountOld(el, k, o));
+  const hs = put('v2', mountMascot); put('v1', mountOld);
   let sad = false;
   document.querySelectorAll('[data-a]').forEach(b => b.onclick = () => hs.forEach(h => h.act(b.dataset.a)));
   document.querySelector('[data-mood]').onclick = () => { sad = !sad; hs.forEach(h => h.setMood(sad ? 'sad' : 'happy')); };

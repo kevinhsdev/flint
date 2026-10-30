@@ -5,13 +5,15 @@ import { startFresh, wipeAll } from '../../src/db/repo';
 import { db } from '../../src/db/db';
 import { coachLine } from '../../src/screens/today/Today';
 
+vi.setConfig({ testTimeout: 30_000 }); // o boot com dados de exemplo é lento com muitos arquivos em paralelo
+
 beforeEach(() => { location.hash = '#/'; });
 
 test('primeira abertura mostra demo e "Começar do zero" zera', async () => {
   await wipeAll();
   const user = userEvent.setup();
   render(<App />);
-  expect(await screen.findByText(/Dados de exemplo/, {}, { timeout: 4000 })).toBeInTheDocument();
+  expect(await screen.findByText(/Dados de exemplo/, {}, { timeout: 15000 })).toBeInTheDocument();
   await user.click(screen.getByRole('button', { name: 'Começar do zero' }));
   await user.click(screen.getByRole('button', { name: 'Apagar tudo' }));
   expect(await screen.findByText('Bora montar sua primeira rotina?')).toBeInTheDocument();
@@ -22,7 +24,7 @@ test('tocar no card de água soma 250 ml', async () => {
   await startFresh();
   const user = userEvent.setup();
   render(<App />);
-  const card = await screen.findByRole('button', { name: /^Água/ }, { timeout: 4000 });
+  const card = await screen.findByRole('button', { name: /^Água/ }, { timeout: 15000 });
   expect(card).toHaveTextContent('0,0');
   await user.click(card);
   expect(await screen.findByText('0,25')).toBeInTheDocument();

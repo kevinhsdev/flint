@@ -56,3 +56,20 @@ export function dayIntensity(sessions: Session[], days: string[]): Record<string
   const max = Math.max(0, ...Object.values(vol));
   return Object.fromEntries(Object.entries(vol).map(([d, v]) => [d, max ? v / max : 0]));
 }
+
+/** Séries de trabalho por músculo no período: primário conta 1, secundário 0,5. */
+export function muscleSets(sessions: Session[], fromDay: string, toDay: string, lib: Exercise[]): Record<Muscle, number> {
+  const out = Object.fromEntries(MUSCLES.map(m => [m, 0])) as Record<Muscle, number>;
+  const byId = new Map(lib.map(e => [e.id, e]));
+  for (const s of sessions) {
+    const d = dayOf(s);
+    if (s.endedAt === null || d < fromDay || d > toDay) continue;
+    for (const x of doneSets(s)) {
+      const ex = byId.get(x.exerciseId);
+      if (!ex) continue;
+      out[ex.primary] += 1;
+      for (const m of ex.secondary) out[m] += 0.5;
+    }
+  }
+  return out;
+}

@@ -4,7 +4,7 @@ import { Sheet } from '../../ui/Sheet';
 import { fmtNum, NumberField } from '../../ui/NumberField';
 
 const BARS = [20, 15, 10];
-const PLATE_COLOR: Record<number, string> = { 25: '#E5163E', 20: '#3B82F6', 15: '#F5B700', 10: '#3BB273', 5: '#F5F0F7', 2.5: '#A193AA', 1.25: '#6E6177' };
+const PLATE_COLOR: Record<number, string> = { 25: '#E5163E', 20: '#3B82F6', 15: '#F5B700', 10: '#3BB273', 5: '#F5F0F7', 2.5: '#8E8E93', 1.25: '#6E6177' };
 
 /** Calculadora de anilhas: quanto colocar de cada lado da barra. */
 export function PlateCalc({ open, kg, onClose, onKg }: { open: boolean; kg: number; onClose(): void; onKg(kg: number): void }) {

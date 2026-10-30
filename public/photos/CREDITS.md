@@ -6,7 +6,7 @@ Todas do [Unsplash](https://unsplash.com), sob a [Licença Unsplash](https://uns
 |---|---|---|
 | peito.webp | peito | https://images.unsplash.com/photo-1598971639058-fab3c3109a00 |
 | costas.webp | costas, trapézio | https://images.unsplash.com/photo-1526506118085-60ce8714f8c5 |
-| pernas.webp | quadríceps, posterior, glúteos, panturrilha | https://images.unsplash.com/photo-1574680096145-d05b474e2155 |
+| pernas.webp | quadríceps, posterior, glúteos, panturrilha | https://images.unsplash.com/photo-1534367610401-9f5ed68180aa |
 | ombros.webp | ombros | https://images.unsplash.com/photo-1532029837206-abbe2b7620e3 |
 | bracos.webp | bíceps, tríceps, antebraço | https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e |
 | abdomen.webp | abdômen | https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b |

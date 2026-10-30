@@ -13,5 +13,7 @@ test('barra tem 5 abas e marca a ativa', async () => {
 
 test('barra continua na sessão de treino (é a saída para outras abas)', async () => {
   renderAt('/treino/sessao?start=livre');
-  expect(await screen.findByRole('navigation', { name: 'Principal' })).toBeInTheDocument();
+  // espera a sessão terminar de carregar: senão o carregamento assíncrono roda depois do fim do teste (no CI, mais lento)
+  expect(await screen.findByRole('heading', { name: 'Treino livre' })).toBeInTheDocument();
+  expect(screen.getByRole('navigation', { name: 'Principal' })).toBeInTheDocument();
 });

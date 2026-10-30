@@ -46,6 +46,7 @@ test('começar outro treino com um em andamento pergunta antes', async () => {
   await user.click(screen.getByRole('button', { name: 'Descartar e começar B' }));
   await vi.waitFor(async () => expect((await getActiveSession())?.templateId).toBe('tB'));
   expect(await db.sessions.get(first)).toBeUndefined();
+  expect(await screen.findByRole('heading', { name: 'B' })).toBeInTheDocument(); // sessão nova carregada antes do fim do teste
 });
 
 test('erro de renderização mostra saída em vez de tela branca', () => {

@@ -37,31 +37,55 @@ export default function SessionScreen() {
   const [summary, setSummary] = useState<{ session: Session; prs: PR[]; xp: number } | null>(null);
   const once = useRef(false);
 
+  const [conflict, setConflict] = useState<{ active: Session; start: string; name: string } | null>(null);
+
+  const open = useCallback(async (active: Session) => {
+    const [sessions, library, water, weights, settings] = await Promise.all([
+      db.sessions.toArray(), db.exercises.toArray(), db.water.toArray(), db.weights.toArray(), getSettings(),
+    ]);
+    setCtx({
+      history: sessions.filter(x => x.id !== active.id),
+      lib: new Map(library.map(e => [e.id, e])),
+      tpl: active.templateId ? await db.templates.get(active.templateId) : undefined,
+      game: { water, weights, settings, library },
+    });
+    setS(active);
+  }, []);
+
   useEffect(() => {
     if (once.current) return; // StrictMode roda o efeito duas vezes; a sessão só pode nascer uma
     once.current = true;
     (async () => {
       const start = params.get('start'), edit = params.get('edit');
       let active = edit ? await db.sessions.get(edit) : await getActiveSession();
+      if (start) nav('/treino/sessao', { replace: true });
+      // outro treino já em andamento: pergunta em vez de reabrir o errado em silêncio
+      if (active && start && (active.templateId ?? 'livre') !== start) {
+        const name = start === 'livre' ? 'treino livre' : (await db.templates.get(start))?.name ?? 'treino';
+        setConflict({ active, start, name });
+        return;
+      }
       if (!active && start) { await startSession(start === 'livre' ? null : start); active = await getActiveSession(); }
       if (!active) { nav(edit ? '/treino/historico' : '/treino', { replace: true }); return; }
-      if (start) nav('/treino/sessao', { replace: true });
-      const [sessions, library, water, weights, settings] = await Promise.all([
-        db.sessions.toArray(), db.exercises.toArray(), db.water.toArray(), db.weights.toArray(), getSettings(),
-      ]);
-      setCtx({
-        history: sessions.filter(x => x.id !== active.id),
-        lib: new Map(library.map(e => [e.id, e])),
-        tpl: active.templateId ? await db.templates.get(active.templateId) : undefined,
-        game: { water, weights, settings, library },
-      });
-      setS(active);
+      await open(active);
     })();
-  }, [nav, params]);
+  }, [nav, params, open]);
 
   const endRest = useCallback(() => setRest(null), []);
 
   if (summary && ctx) return <Summary {...summary} lib={ctx.game.library} onDone={() => nav('/treino')} />;
+  if (conflict && !s) return (
+    <main className="screen pad">
+      <h1>{conflict.active.name} ainda está em andamento</h1>
+      <p className="muted">Termine ou descarte esse treino antes de começar outro.</p>
+      <button className="btn wide" onClick={() => { const a = conflict.active; setConflict(null); void open(a); }}>Continuar {conflict.active.name}</button>
+      <button className="btn ghost wide" onClick={async () => {
+        await discardSession(conflict.active.id);
+        await startSession(conflict.start === 'livre' ? null : conflict.start);
+        const a = await getActiveSession(); setConflict(null); if (a) await open(a);
+      }}>Descartar e começar {conflict.name}</button>
+    </main>
+  );
   if (!s || !ctx) return <main className="screen" />;
 
   // em andamento grava a cada mudança; editando o histórico, só ao salvar

@@ -18,6 +18,7 @@ import { Icon } from '../../ui/Icon';
 import { fmtNum, NumberField } from '../../ui/NumberField';
 import { Sheet } from '../../ui/Sheet';
 import { startPath } from '../train/Routine';
+import { useToday } from '../../ui/useToday';
 
 export interface CoachCtx {
   hasRoutine: boolean; trainedToday: boolean; isTrainDay: boolean; mood: 'happy' | 'sad';
@@ -50,6 +51,7 @@ export default function Today() {
   const [pick, setPick] = useState(false);
   const [weighing, setWeighing] = useState(false);
   const [kg, setKg] = useState<number | null>(null);
+  const today = useToday();
   const d = useLiveQuery(async () => {
     const [sessions, templates, water, weights, library, settings, active] = await Promise.all([
       db.sessions.toArray(), db.templates.orderBy('order').toArray(), db.water.toArray(), db.weights.toArray(),
@@ -59,7 +61,7 @@ export default function Today() {
   }, []);
   if (!d) return <main className="screen" />;
 
-  const now = new Date(), today = localDay(now);
+  const now = new Date();
   const lib = new Map(d.library.map(e => [e.id, e]));
   const game = { sessions: d.sessions, water: d.water, weights: d.weights, settings: d.settings, library: d.library };
   const active = d.templates.filter(t => !t.archived);
@@ -128,7 +130,7 @@ export default function Today() {
       )}
 
       <div className="pair">
-        <WaterCard ml={ml} goal={goal} onAdd={n => logWater(n)} onUndo={() => undoLastWater(today)}
+        <WaterCard ml={ml} goal={goal} onAdd={n => logWater(n)} onUndo={() => undoLastWater(localDay(new Date()))}
           badge={<Mascot kind="gota" size={40} mood={gotaMood} interactive={false} />} />
         <button className="tile weight" onClick={() => { setKg(lastW?.kg ?? null); setWeighing(true); }} aria-label="Registrar peso">
           <div className="k">Peso {delta !== null && <span className={`num ${delta <= 0 ? 'down' : 'up'}`}>{delta > 0 ? '+' : delta < 0 ? '−' : ''}{fmtNum(Math.abs(Math.round(delta * 10) / 10))} kg</span>}</div>
@@ -162,7 +164,7 @@ export default function Today() {
 
       <Sheet open={weighing} onClose={() => setWeighing(false)} title="Peso de hoje">
         <label className="field"><span>Peso (kg)</span><NumberField decimal value={kg} onValue={setKg} autoFocus /></label>
-        <button className="btn wide" disabled={!kg || kg < 20 || kg > 400} onClick={async () => { await logWeight(kg!, today); setWeighing(false); }}>Registrar</button>
+        <button className="btn wide" disabled={!kg || kg < 20 || kg > 400} onClick={async () => { await logWeight(kg!, localDay(new Date())); setWeighing(false); }}>Registrar</button>
       </Sheet>
     </main>
   );

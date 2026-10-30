@@ -29,6 +29,7 @@ export default function Settings() {
   const [photos, setPhotos] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [reset, setReset] = useState(false);
+  const [pending, setPending] = useState<File | null>(null);
   if (!d) return <main className="screen" />;
   const { s } = d;
   const auto = waterGoalMl({ ...s, waterGoalMl: null }, d.lastKg);
@@ -89,9 +90,7 @@ export default function Settings() {
           <label className="btn ghost file-pick">Importar
             <input type="file" accept="application/json,.json" hidden onChange={async e => {
               const f = e.target.files?.[0]; e.target.value = '';
-              if (!f) return;
-              const r = await importBackup(f);
-              setMsg(r.ok ? 'Backup restaurado.' : r.error);
+              if (f) setPending(f);
             }} />
           </label>
         </div>
@@ -108,6 +107,14 @@ export default function Settings() {
         <p className="muted">{APP_NAME} {VERSION} · feito pra treinar, sem anúncios e sem conta.</p>
         <a className="inline-link" href={REPO_URL} target="_blank" rel="noreferrer">Código no GitHub</a>
       </section>
+
+      <Sheet open={!!pending} onClose={() => setPending(null)} title="Restaurar backup?">
+        <p className="muted">O backup substitui os dados deste aparelho: treinos, água e peso. Fotos só são trocadas se o backup tiver fotos.</p>
+        <div className="row-2">
+          <button className="btn ghost" onClick={() => setPending(null)}>Cancelar</button>
+          <button className="btn" onClick={async () => { const r = await importBackup(pending!); setPending(null); setMsg(r.ok ? 'Backup restaurado.' : r.error); }}>Substituir</button>
+        </div>
+      </Sheet>
 
       <Sheet open={reset} onClose={() => setReset(false)} title="Começar do zero?">
         <p className="muted">Treinos, água, peso e fotos serão apagados deste aparelho. A biblioteca de exercícios continua.</p>

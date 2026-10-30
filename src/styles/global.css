@@ -159,6 +159,7 @@ input { min-width: 0; }
 .pill.on { background: var(--text); color: var(--bg); }
 .ex-list { gap: 2px; min-height: 40dvh; }
 .ex-row { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 8px; border-radius: 14px; text-align: left; }
+.ex-li { display: flex; align-items: center; }
 .ex-row span:first-child { display: grid; gap: 2px; }
 .ex-row b { font-weight: 650; font-size: 15px; }
 .ex-row small { color: var(--muted); font-size: 12.5px; }

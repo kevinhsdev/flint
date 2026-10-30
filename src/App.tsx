@@ -3,6 +3,7 @@ import { HashRouter, Route, Routes } from 'react-router';
 import { boot } from './db/repo';
 import { LoadingScreen } from './ui/LoadingScreen';
 import { TabBar } from './ui/TabBar';
+import { ErrorBoundary } from './ui/ErrorBoundary';
 import Today from './screens/today/Today';
 import Routine from './screens/train/Routine';
 import TemplateEditor from './screens/train/TemplateEditor';
@@ -49,7 +50,7 @@ export default function App() {
   return (
     <HashRouter>
       {phase !== 'ready' && <LoadingScreen leaving={phase === 'leaving'} />}
-      {phase !== 'loading' && <Shell />}
+      {phase !== 'loading' && <ErrorBoundary><Shell /></ErrorBoundary>}
     </HashRouter>
   );
 }

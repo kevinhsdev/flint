@@ -1,12 +1,13 @@
-import { addDays, localDay, weekday, weekStart } from '../../domain/dates';
+import { addDays, weekday, weekStart } from '../../domain/dates';
 import { dayIntensity } from '../../domain/progress';
 import type { Session } from '../../domain/types';
+import { useToday } from '../../ui/useToday';
 
 const WEEKS = 26;
 
 /** Mapa de calor das últimas 26 semanas: colunas = semanas, linhas = seg…dom. */
 export function Calendar({ sessions, trainDays }: { sessions: Session[]; trainDays: number[] }) {
-  const today = localDay(new Date());
+  const today = useToday();
   const first = addDays(weekStart(today), -7 * (WEEKS - 1));
   const days = Array.from({ length: WEEKS * 7 }, (_, i) => addDays(first, i));
   const heat = dayIntensity(sessions, days);

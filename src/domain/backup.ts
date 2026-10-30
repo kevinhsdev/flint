@@ -1,4 +1,5 @@
 import { db } from '../db/db';
+import { DEFAULT_SETTINGS, ensureLibrary } from '../db/repo';
 
 const VERSION = 1;
 const TABLES = ['exercises', 'templates', 'sessions', 'water', 'weights', 'kv', 'photos'] as const;
@@ -31,17 +32,29 @@ export async function exportBackup(includePhotos: boolean): Promise<Blob> {
 const isObj = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x !== null && !Array.isArray(x);
 const str = (x: unknown) => typeof x === 'string';
 const num = (x: unknown) => typeof x === 'number' && Number.isFinite(x);
+const numOrNull = (x: unknown) => x === null || num(x);
+const setOk = (s: unknown) => isObj(s) && num(s.kg) && num(s.reps) && typeof s.done === 'boolean';
+const entryOk = (e: unknown) => isObj(e) && str(e.exerciseId) && Array.isArray(e.sets) && e.sets.every(setOk);
+/** Campos ausentes viram padrão em getSettings; presentes precisam ter o tipo certo. */
+const settingsOk = (v: unknown) => isObj(v)
+  && (!('heightCm' in v) || numOrNull(v.heightCm)) && (!('waterGoalMl' in v) || numOrNull(v.waterGoalMl))
+  && (!('trainDays' in v) || (Array.isArray(v.trainDays) && v.trainDays.every(num)))
+  && (!('trainTime' in v) || str(v.trainTime)) && (!('demo' in v) || typeof v.demo === 'boolean')
+  && (!('notif' in v) || isObj(v.notif));
 const ROW: Record<Table, (r: Record<string, unknown>) => boolean> = {
   exercises: r => str(r.id) && str(r.name) && str(r.primary),
   templates: r => str(r.id) && str(r.name) && Array.isArray(r.items),
-  sessions: r => str(r.id) && num(r.startedAt) && Array.isArray(r.entries) && (r.endedAt === null || num(r.endedAt)),
+  sessions: r => str(r.id) && num(r.startedAt) && Array.isArray(r.entries) && r.entries.every(entryOk) && numOrNull(r.endedAt),
   water: r => str(r.id) && str(r.day) && num(r.ml),
   weights: r => str(r.id) && str(r.day) && num(r.kg),
-  kv: r => str(r.key),
+  kv: r => str(r.key) && (r.key !== 'settings' || settingsOk(r.value)),
   photos: r => str(r.id) && str(r.day) && str(r.data) && (r.data as string).startsWith('data:'),
 };
 
-/** Valida tudo antes de tocar no banco; depois troca o conteúdo numa transação só (tudo ou nada). */
+/**
+ * Valida tudo antes de tocar no banco; depois troca o conteúdo numa transação só (tudo ou nada).
+ * Backup sem fotos mantém as fotos do aparelho (exportar sem fotos é o padrão).
+ */
 export async function importBackup(file: Blob): Promise<{ ok: true } | { ok: false; error: string }> {
   let json: unknown;
   try { json = JSON.parse(await file.text()); } catch { return { ok: false, error: 'O arquivo não é um backup válido.' }; }
@@ -50,15 +63,22 @@ export async function importBackup(file: Blob): Promise<{ ok: true } | { ok: fal
   const data = json.data;
   if (!isObj(data)) return { ok: false, error: 'Backup incompleto.' };
   for (const t of TABLES) {
-    const rows = data[t] ?? [];
-    if (!Array.isArray(rows) || !rows.every(r => isObj(r) && ROW[t](r))) return { ok: false, error: `Backup com dados inválidos (${t}).` };
+    const rows = t === 'photos' ? data[t] ?? [] : data[t];
+    if (!Array.isArray(rows)) return { ok: false, error: 'Backup incompleto.' };
+    if (!rows.every(r => isObj(r) && ROW[t](r))) return { ok: false, error: `Backup com dados inválidos (${t}).` };
   }
   const rows = (t: Table) => (data[t] ?? []) as Record<string, unknown>[];
-  const photos = rows('photos').map(p => ({ id: p.id as string, day: p.day as string, blob: dataUrlToBlob(p.data as string) }));
-  await db.transaction('rw', db.tables, async () => {
-    await Promise.all(db.tables.map(t => t.clear()));
-    for (const t of TABLES) if (t !== 'photos') await db.table(t).bulkAdd(rows(t));
-    await db.photos.bulkAdd(photos);
-  });
+  try {
+    const photos = rows('photos').map(p => ({ id: p.id as string, day: p.day as string, blob: dataUrlToBlob(p.data as string) }));
+    await db.transaction('rw', db.tables, async () => {
+      await Promise.all(db.tables.filter(t => t.name !== 'photos' || photos.length).map(t => t.clear()));
+      for (const t of TABLES) if (t !== 'photos') await db.table(t).bulkAdd(rows(t));
+      await db.photos.bulkAdd(photos);
+      await ensureLibrary();
+      if (!(await db.kv.get('settings'))) await db.kv.put({ key: 'settings', value: { ...DEFAULT_SETTINGS, demo: false } });
+    });
+  } catch {
+    return { ok: false, error: 'Não deu para restaurar este backup. Seus dados não foram alterados.' };
+  }
   return { ok: true };
 }

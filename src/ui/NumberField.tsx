@@ -8,6 +8,8 @@ export function parseKg(input: string): number | null {
 }
 
 export const fmtNum = (n: number) => n.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
+/** No campo, sem ponto de milhar: "2.750" seria lido de volta como 2,75. */
+const fmtField = (n: number) => n.toLocaleString('pt-BR', { maximumFractionDigits: 2, useGrouping: false });
 
 type Props = Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange'> & {
   value: number | null;
@@ -17,8 +19,8 @@ type Props = Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange'> &
 
 /** Campo numérico que aceita vírgula e mantém o texto enquanto a pessoa digita. */
 export function NumberField({ value, onValue, decimal = false, ...rest }: Props) {
-  const [text, setText] = useState(value ? fmtNum(value) : '');
-  useEffect(() => { if (parseKg(text) !== value) setText(value ? fmtNum(value) : ''); }, [value]); // eslint-disable-line react-hooks/exhaustive-deps
+  const [text, setText] = useState(value ? fmtField(value) : '');
+  useEffect(() => { if (parseKg(text) !== value) setText(value ? fmtField(value) : ''); }, [value]); // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <input
       type="text" inputMode={decimal ? 'decimal' : 'numeric'} autoComplete="off" {...rest}

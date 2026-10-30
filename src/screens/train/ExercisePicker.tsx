@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
-import { addCustomExercise } from '../../db/repo';
+import { addCustomExercise, archiveExercise } from '../../db/repo';
 import { fold, MUSCLE_NAMES } from '../../domain/exercises';
 import { EQUIPMENT, MUSCLES, type Equipment, type Muscle } from '../../domain/types';
 import { Icon } from '../../ui/Icon';
@@ -44,11 +44,12 @@ export function ExercisePicker({ onPick }: { onPick(ids: string[]): void }) {
         {list.map(e => {
           const on = picked.includes(e.id);
           return (
-            <li key={e.id}>
+            <li key={e.id} className="ex-li">
               <button className={`ex-row${on ? ' on' : ''}`} aria-pressed={on} onClick={() => toggle(e.id)}>
                 <span><b>{e.name}</b><small>{MUSCLE_NAMES[e.primary]} · {EQUIPMENT_NAMES[e.equipment]}</small></span>
                 <span className="tick">{on && <Icon name="check" />}</span>
               </button>
+              {e.custom && <button className="icon-btn" aria-label={`Arquivar ${e.name}`} onClick={() => { setPicked(p => p.filter(x => x !== e.id)); archiveExercise(e.id); }}><Icon name="trash" /></button>}
             </li>
           );
         })}

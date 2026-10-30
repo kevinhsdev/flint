@@ -1,11 +1,11 @@
 import { screen } from '@testing-library/react';
 import { renderAt } from './render';
-import { boot, getSettings, startFresh, wipeAll } from '../../src/db/repo';
+import { loadDemo, getSettings, startFresh, wipeAll } from '../../src/db/repo';
 
 vi.setConfig({ testTimeout: 30_000 });
 
 test('Time mostra o estágio real e a trilha de evolução', async () => {
-  await wipeAll(); await boot();
+  await wipeAll(); await loadDemo();
   renderAt('/time');
   expect(await screen.findByRole('heading', { name: 'Chama' })).toBeInTheDocument();
   expect(screen.getByText(/XP/, { selector: '.xp-num' })).toBeInTheDocument();

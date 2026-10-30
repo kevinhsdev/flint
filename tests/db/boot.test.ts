@@ -1,15 +1,13 @@
 import { db } from '../../src/db/db';
-import { boot, getSettings, startFresh, wipeAll } from '../../src/db/repo';
+import { getSettings, loadDemo, startFresh, wipeAll } from '../../src/db/repo';
 
 beforeEach(() => wipeAll());
 
-test('boot semeia uma vez; startFresh zera e tira demo', async () => {
-  await boot();
+test('loadDemo semeia; startFresh zera e tira demo', async () => {
+  await loadDemo();
   const n = await db.sessions.count();
   expect(n).toBeGreaterThan(0);
   expect((await getSettings()).demo).toBe(true);
-  await boot();
-  expect(await db.sessions.count()).toBe(n);
   await startFresh();
   expect(await db.sessions.count()).toBe(0);
   expect(await db.templates.count()).toBe(0);

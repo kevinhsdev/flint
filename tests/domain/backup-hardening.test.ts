@@ -1,11 +1,11 @@
 import { db } from '../../src/db/db';
-import { addPhoto, boot, getSettings, wipeAll } from '../../src/db/repo';
+import { addPhoto, loadDemo, getSettings, wipeAll } from '../../src/db/repo';
 import { exportBackup, importBackup } from '../../src/domain/backup';
 
 const file = (o: unknown) => new Blob([JSON.stringify(o)]);
 async function backupJson() { return JSON.parse(await (await exportBackup(false)).text()); }
 
-beforeEach(async () => { await wipeAll(); await boot(); });
+beforeEach(async () => { await wipeAll(); await loadDemo(); });
 
 test('backup sem fotos não apaga as fotos do aparelho', async () => {
   const json = await backupJson();

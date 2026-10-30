@@ -1,7 +1,7 @@
 import { screen, within } from '@testing-library/react';
 import { renderAt } from './render';
 import { db } from '../../src/db/db';
-import { archiveExercise, boot, getSettings, startFresh, wipeAll } from '../../src/db/repo';
+import { archiveExercise, loadDemo, getSettings, startFresh, wipeAll } from '../../src/db/repo';
 import { computeXP } from '../../src/domain/gamification';
 
 async function xpNow() {
@@ -12,7 +12,7 @@ async function xpNow() {
 }
 
 test('excluir treino do histórico some da lista e reduz o XP derivado', async () => {
-  await wipeAll(); await boot();
+  await wipeAll(); await loadDemo();
   const before = await xpNow(), n = await db.sessions.count();
   const { user } = renderAt('/treino/historico');
   const [first] = await screen.findAllByRole('link', { name: /Abrir/ });

@@ -13,7 +13,13 @@ export interface Exercise {
 }
 export interface TemplateItem { exerciseId: string; sets: number; repMin: number; repMax: number; restSec: number }
 export interface Template { id: string; name: string; order: number; items: TemplateItem[]; archived: boolean }
-export interface SetLog { kg: number; reps: number; done: boolean }
+export interface SetLog { kg: number; reps: number; done: boolean; warmup?: boolean }
+
+export type Goal = 'massa' | 'emagrecer' | 'condicionamento' | 'forca';
+export type Level = 'iniciante' | 'intermediario' | 'avancado';
+export type Place = 'completa' | 'basica' | 'casa';
+/** Respostas da pesquisa inicial que alimentam o plano gerado. */
+export interface Profile { goal: Goal; level: Level; days: number[]; minutes: 30 | 45 | 60 | 90; place: Place; age: number }
 export interface Entry { exerciseId: string; sets: SetLog[] }
 export interface Session {
   id: string; templateId: string | null; name: string;
@@ -29,4 +35,9 @@ export interface Settings {
   trainTime: string;
   demo: boolean;
   notif: { water: boolean; train: boolean; pedra: boolean; quietStart: string; quietEnd: string };
+  onboarded: boolean;
+  profile: Profile | null;
+  sound: boolean;
+  /** carga-alvo por exercício (previsão de meta) */
+  targets: Record<string, number>;
 }

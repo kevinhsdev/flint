@@ -8,4 +8,8 @@ export const DEFAULT_SETTINGS: Settings = {
   trainTime: RULES.defaults.trainTime,
   demo: false,
   notif: { water: true, train: true, pedra: true, quietStart: RULES.notif.quietStart, quietEnd: RULES.notif.quietEnd },
+  onboarded: false,
+  profile: null,
+  sound: true,
+  targets: {},
 };

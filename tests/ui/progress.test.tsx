@@ -1,7 +1,7 @@
 import { screen } from '@testing-library/react';
 import { renderAt } from './render';
 import { db } from '../../src/db/db';
-import { boot, logWeight, saveSettings, startFresh, wipeAll } from '../../src/db/repo';
+import { loadDemo, logWeight, saveSettings, startFresh, wipeAll } from '../../src/db/repo';
 import { localDay } from '../../src/domain/dates';
 
 vi.setConfig({ testTimeout: 30_000 });
@@ -19,7 +19,7 @@ test('IMC aparece com altura e some sem altura', async () => {
 });
 
 test('gráfico do supino tem um ponto por sessão', async () => {
-  await wipeAll(); await boot();
+  await wipeAll(); await loadDemo();
   const n = (await db.sessions.toArray()).filter(s => s.endedAt && s.entries.some(e => e.exerciseId === 'supino-reto-barra' && e.sets.some(x => x.done))).length;
   expect(n).toBeGreaterThan(1);
   const { container } = renderAt('/progresso/exercicio/supino-reto-barra');

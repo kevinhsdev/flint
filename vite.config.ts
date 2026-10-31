@@ -33,6 +33,7 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['tests/setup.ts'],
+    css: { include: [/styles\/(global|tokens)\.css/] }, // estilos.test lê o CSS cru
     // telas que abrem o banco ficam lentas com muitos arquivos jsdom em paralelo
     testTimeout: 30_000,
     maxWorkers: 4,

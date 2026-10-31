@@ -6,8 +6,8 @@
   --bar: rgba(249,249,249,.88); --scrim: rgba(0,0,0,.35);
   --card-shadow: 0 4px 14px rgba(0,0,0,.05); --feat-shadow: 0 14px 34px rgba(0,0,0,.18);
   --crimson: #E5163E; --crimson-hi: #E5163E; --crimson-lo: #B80F30;
-  --yellow: #ffd43b; --blue: #4dabf7; --black: #111; --ink-on-yellow: #111;
-  --gold: #F5B700; --gold-hi: #FFE38A; --water: #4dabf7; --water-hi: #8CB8FF;
+  --yellow: #ffd43b; --blue: #1c7ed6; --black: #111; --ink-on-yellow: #111;
+  --gold: #F5B700; --gold-hi: #FFE38A; --water: #1c7ed6; --water-hi: #8CB8FF;
   --ease-out: cubic-bezier(.2, .8, .2, 1);
   --ease-drawer: cubic-bezier(.32, .72, 0, 1);
   --font: "Archivo Variable", system-ui, sans-serif;

@@ -321,6 +321,7 @@ html[data-theme="dark"] .gold { color: var(--yellow); }
   display: flex; flex-direction: column; justify-content: space-between; gap: 18px; background: #222; box-shadow: var(--feat-shadow); }
 .feat.red { min-height: 210px; background: radial-gradient(120% 120% at 100% 0%, #FF4D6D 0%, #E5163E 45%, #A80C2B 100%); }
 .feat-ph { position: absolute; inset: 0; background: center / cover no-repeat; animation: feat-zoom 12s ease-in-out infinite alternate; }
+@media (prefers-reduced-motion: reduce) { .feat-ph { animation: none; } }
 .feat:not(.red)::after { content: ""; position: absolute; inset: 0; pointer-events: none;
   background: linear-gradient(180deg, rgba(0,0,0,.45), rgba(0,0,0,0) 40%, rgba(0,0,0,.78)); }
 @keyframes feat-zoom { to { transform: scale(1.06); } }
@@ -468,6 +469,7 @@ html[data-theme="dark"] { --sil: #1c1c1e; --sil-line: rgba(255,255,255,.08); --m
 .evo .cur { color: var(--text); font-weight: 700; }
 .evo .lock .m { filter: grayscale(1) opacity(.3); }
 .mate { display: flex; align-items: center; gap: 4px; padding: 6px 10px 6px 4px; color: #fff; }
+.mate > div:first-child { border-radius: 50%; background: radial-gradient(closest-side, rgba(255,255,255,.5), transparent); }
 .mate b { font-size: 15px; font-weight: 800; display: block; }
 .mate span { font-size: 11.5px; opacity: .8; }
 .medals, .milestones { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
@@ -596,10 +598,10 @@ html { scroll-padding-bottom: calc(180px + var(--safe-bottom)); scroll-padding-t
 .forecast { font-weight: 700; font-size: 15px; }
 
 /* recorde compartilhável e retrospectiva */
-.share-pr { width: 36px; height: 36px; margin-left: 4px; color: var(--gold-hi); }
+.share-pr { width: 36px; height: 36px; margin-left: 4px; color: var(--crimson); }
 .share-pr .icon { width: 18px; height: 18px; }
 .share-pr-chip { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; margin: 6px 0 2px; border-radius: 99px;
-  background: rgba(245,183,0,.14); color: var(--gold-hi); font-size: 13px; font-weight: 750; }
+  background: var(--yellow); color: var(--ink-on-yellow); font-size: 13px; font-weight: 750; }
 .share-pr-chip .icon { width: 16px; height: 16px; }
 .share-pr-chip:active { transform: scale(.96); }
 .recap-link { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-radius: 18px; font-weight: 750;

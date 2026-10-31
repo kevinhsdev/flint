@@ -34,4 +34,10 @@ describe('estilos do redesign', () => {
     expect(PLATE_COLOR[5]).not.toBe('#F5F0F7');
     expect(PLATE_COLOR[1.25]).not.toBe('#6E6177');
   });
+
+  it('carregamento é um bloco vermelho com barra de progresso, como as telas de comemoração', () => {
+    expect(css.match(/\.loading \{[^}]*\}/)![0]).toContain('background: var(--crimson)');
+    expect(css).toMatch(/\.loading-bar i \{[^}]*animation/);
+    expect(html).toMatch(/name="theme-color" content="#E5163E"/);
+  });
 });

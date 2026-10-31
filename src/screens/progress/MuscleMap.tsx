@@ -25,7 +25,7 @@ export function MuscleMap({ sessions, lib }: { sessions: Session[]; lib: Exercis
 
   const body = (paths: Partial<Record<Muscle, string>>, label: string) => (
     <figure>
-      <svg viewBox="30 6 140 388" aria-label={label} role="group">
+      <svg viewBox="24 6 152 388" aria-label={label} role="group">
         <path d={SILHOUETTE} className="sil" />
         {(Object.keys(paths) as Muscle[]).map(m => (
           <path key={m} d={paths[m]} data-muscle={m} className={`mus ${level(sets[m])}${picked === m ? ' picked' : ''}`}

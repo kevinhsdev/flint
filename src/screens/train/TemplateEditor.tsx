@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
 import { uid, upsertTemplate } from '../../db/repo';
+import { toggleGroup } from '../../domain/training';
 import type { Template, TemplateItem } from '../../domain/types';
 import { Icon } from '../../ui/Icon';
 import { Sheet } from '../../ui/Sheet';
@@ -48,10 +49,15 @@ export default function TemplateEditor() {
 
       <ul className="items" ref={list as React.RefObject<HTMLUListElement>}>
         {rows.map((it, i) => (
-          <li key={`${it.exerciseId}-${i}`} data-reorder className={`item${dragging === i ? ' dragging' : ''}`}>
+          <li key={`${it.exerciseId}-${i}`} data-reorder className={`item${dragging === i ? ' dragging' : ''}${it.group && rows[i + 1]?.group === it.group ? ' ss-next' : ''}`}>
             <div className="item-head">
               <span className="grip" aria-label="Arrastar" {...grip(i)}><Icon name="grip" /></span>
               <b>{names?.get(it.exerciseId) ?? '…'}</b>
+              {i < rows.length - 1 && (() => {
+                const on = !!it.group && rows[i + 1].group === it.group, n = names?.get(it.exerciseId) ?? 'exercício';
+                return <button className={`icon-btn ss-link${on ? ' on' : ''}`} aria-pressed={on} onClick={() => setItems(toggleGroup(t.items, i, uid))}
+                  aria-label={on ? `Superset: separar ${n} do próximo` : `Superset: juntar ${n} com o próximo`}><Icon name="link" /></button>;
+              })()}
               <button className="icon-btn" aria-label={`Remover ${names?.get(it.exerciseId) ?? 'exercício'}`} onClick={() => setItems(t.items.filter((_, j) => j !== i))}><Icon name="trash" /></button>
             </div>
             <div className="item-fields">

@@ -30,6 +30,7 @@ describe('supersets', () => {
     expect(supersetRound(entries, 0)).toEqual({ round: 2, of: 3, first: 0, last: 1 });
     expect(supersetRound(entries, 2)).toBeNull();
     expect(supersetRound([e('g', true), e('g', true)], 1)).toEqual({ round: 1, of: 1, first: 0, last: 1 });
+    expect(supersetRound([e('g', true), e(undefined, true)], 0)).toBeNull(); // par removido: sobra sozinho
   });
 
   test('aquecimento não conta na rodada', () => {

@@ -144,7 +144,7 @@ export async function startSession(templateId: string | null): Promise<string> {
     const ex = await db.exercises.get(item.exerciseId);
     const last = lastEntryFor(item.exerciseId, history);
     const kg = (ex && suggestOverload(item, last, ex.equipment)?.kg) ?? 0;
-    entries.push({ exerciseId: item.exerciseId, sets: Array.from({ length: item.sets }, () => ({ kg, reps: 0, done: false })) });
+    entries.push({ exerciseId: item.exerciseId, sets: Array.from({ length: item.sets }, () => ({ kg, reps: 0, done: false })), ...(item.group ? { group: item.group } : {}) });
   }
   const s: Session = { id: uid(), templateId: t?.id ?? null, name: t?.name ?? 'Treino livre', startedAt: Date.now(), endedAt: null, entries };
   await db.transaction('rw', db.sessions, db.kv, async () => {

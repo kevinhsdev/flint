@@ -35,6 +35,7 @@ export function supersetRound(entries: Entry[], i: number): { round: number; of:
   let first = i, last = i;
   while (entries[first - 1]?.group === g) first--;
   while (entries[last + 1]?.group === g) last++;
+  if (first === last) return null; // sobrou sozinho (ex.: o par foi removido)
   const members = entries.slice(first, last + 1);
   const of = Math.max(...members.map(e => work(e).length));
   const done = Math.min(...members.map(e => work(e).filter(s => s.done).length));

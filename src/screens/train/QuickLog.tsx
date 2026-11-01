@@ -38,7 +38,7 @@ export function QuickLog({ templates }: { templates: Template[] }) {
 
       <Sheet open={open === 'cardio'} onClose={close} title="Cardio">
         <div className="sv-days" role="group" aria-label="Tipo de cardio">
-          {CARDIO.map(c => <button key={c} className={`pill${type === c ? ' on' : ''}`} aria-pressed={type === c} onClick={() => setType(c)}>{CARDIO_NAMES[c]}</button>)}
+          {CARDIO.map(c => <button key={c} className={`pill${type === c ? ' on' : ''}`} aria-pressed={type === c} onClick={() => setType(c)}>{c === 'outro' ? 'Outro' : CARDIO_NAMES[c]}</button>)}
         </div>
         <div className="row-2">
           <label className="field"><span>Duração (min)</span><NumberField decimal inputMode="decimal" value={min} onValue={setMin} placeholder="30" /></label>

@@ -665,3 +665,36 @@ html { scroll-padding-bottom: calc(180px + var(--safe-bottom)); scroll-padding-t
 .wr-hint { margin-top: 28px; font-size: 13px; color: rgba(255,255,255,.7); }
 .wr-final { justify-items: stretch; gap: 10px; }
 .wr-card { width: min(100%, 300px); aspect-ratio: 9 / 16; justify-self: center; border-radius: 22px; background: rgba(255,255,255,.14); box-shadow: 0 24px 60px -20px rgba(0,0,0,.45); }
+
+/* ---------- evolução: meta de peso, medidas, números, desafios ---------- */
+.head-btns { display: flex; gap: 6px; }
+.trend { font-size: 13px; font-weight: 700; color: var(--muted); }
+.card .track { background: var(--surface-2); }
+.card .track i { background: var(--crimson); }
+.wgoal { display: grid; gap: 4px; margin-top: 12px; }
+.wgoal .muted { margin: 4px 0 0; font-size: 12.5px; }
+.wgoal-row { display: grid; grid-template-columns: repeat(3, 1fr); }
+.wgoal-row span { display: grid; gap: 1px; }
+.wgoal-row span:nth-child(2) { text-align: center; }
+.wgoal-row span:last-child { text-align: right; }
+.wgoal-row small, .measures small, .totals small { color: var(--muted); font-size: 11.5px; font-weight: 600; }
+.wgoal-row b { font-size: 17px; font-weight: 800; }
+.measures, .totals { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.measures li, .totals li { display: grid; gap: 1px; padding: 10px; border-radius: 12px; background: var(--surface-2); }
+.measures b, .totals b { font-size: 16px; font-weight: 800; }
+.measures i { font-style: normal; font-size: 12px; font-weight: 700; color: var(--muted); }
+.measure-form { display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; }
+.seg.sm { margin: 10px 0; }
+.seg.sm button { height: 30px; font-size: 13px; }
+.heat.year { gap: 2px; }
+.heat.year i { border-radius: 2px; }
+.challenges { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 10px; }
+.challenges li { display: flex; align-items: center; gap: 12px; }
+.challenges .ch-medal { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: var(--surface-2); color: var(--muted); }
+.challenges .ch-medal .icon { width: 20px; height: 20px; }
+.challenges li.done .ch-medal { background: var(--yellow); color: var(--ink-on-yellow); }
+.challenges li.over { opacity: .5; }
+.challenges .ch-body { flex: 1; min-width: 0; }
+.challenges .ch-body b { font-weight: 700; font-size: 14.5px; }
+.challenges .ch-body small { display: flex; justify-content: space-between; margin-top: 4px; color: var(--muted); font-size: 12px; font-weight: 600; }
+.challenges li.done .track i { background: var(--yellow); }

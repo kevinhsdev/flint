@@ -2,10 +2,12 @@ import { Link } from 'react-router';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
 import { getSettings } from '../../db/repo';
+import { waterGoalMl } from '../../domain/body';
 import { computeXP, goalWeeksStreak, mood } from '../../domain/gamification';
 import { RULES } from '../../domain/rules';
 import { Mascot } from '../../mascots/Mascot';
 import { Icon } from '../../ui/Icon';
+import { Challenges } from './Challenges';
 import { Medals } from './Medals';
 
 export default function Team() {
@@ -13,7 +15,7 @@ export default function Team() {
     const [sessions, water, weights, library, settings] = await Promise.all([
       db.sessions.toArray(), db.water.toArray(), db.weights.toArray(), db.exercises.toArray(), getSettings(),
     ]);
-    return { sessions, water, weights, library, settings };
+    return { sessions, water, weights, library, settings, challenges: await db.challenges.toArray() };
   }, []);
   if (!d) return <main className="screen" />;
 
@@ -54,6 +56,7 @@ export default function Team() {
         <div className="tile black mate"><div><Mascot kind="pedra" size={52} /></div><div><b>Pedra</b><span>Guarda recordes</span></div></div>
       </div>
 
+      <Challenges challenges={d.challenges} data={{ ...d, waterGoalMl: waterGoalMl(d.settings, [...d.weights].sort((a, b) => a.day.localeCompare(b.day)).at(-1)?.kg) }} />
       <Medals game={d} />
     </main>
   );

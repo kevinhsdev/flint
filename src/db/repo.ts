@@ -6,7 +6,7 @@ import { makeSeed } from '../domain/seed';
 import { lastEntryFor } from '../domain/routine';
 import { suggestOverload } from '../domain/strength';
 import { generatePlan } from '../domain/plan';
-import type { Challenge, Entry, Exercise, MeasurePart, Profile, Session, Settings, Template } from '../domain/types';
+import type { Challenge, Entry, Exercise, Food, MeasurePart, Profile, Session, Settings, Template } from '../domain/types';
 
 export const uid = () => crypto.randomUUID();
 
@@ -82,6 +82,16 @@ export async function logMeasures(day: string, cm: Partial<Record<MeasurePart, n
 
 export const addChallenge = (c: Omit<Challenge, 'id' | 'startDay'>, startDay: string) => db.challenges.add({ ...c, id: uid(), startDay });
 export const deleteChallenge = (id: string) => db.challenges.delete(id);
+
+export const logFood = (f: Omit<Food, 'id' | 'at'>, at = new Date()) => db.foods.add({ ...f, id: uid(), at: at.getTime() });
+export const deleteFood = (id: string) => db.foods.delete(id);
+
+/** "Repetir de ontem": copia os alimentos de uma refeição pra outro dia. */
+export async function copyMeal(from: string, to: string, meal: string) {
+  const src = await db.foods.where('day').equals(from).filter(f => f.meal === meal).sortBy('at');
+  const at = Date.now();
+  await db.foods.bulkAdd(src.map((f, i) => ({ ...f, id: uid(), day: to, at: at + i })));
+}
 
 export const addPhoto = (blob: Blob, day: string) => db.photos.add({ id: uid(), day, blob });
 export const deletePhoto = (id: string) => db.photos.delete(id);

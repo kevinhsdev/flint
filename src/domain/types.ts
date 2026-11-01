@@ -43,6 +43,10 @@ export const CHALLENGE_KINDS = ['treinos', 'series', 'cardio', 'agua'] as const;
 export type ChallengeKind = (typeof CHALLENGE_KINDS)[number];
 /** Meta com prazo: `target` dentro de `days` dias a partir de `startDay`. O progresso sai dos registros. */
 export interface Challenge { id: string; kind: ChallengeKind; target: number; startDay: string; days: number }
+export interface Macros { kcal: number; p: number; c: number; f: number }
+/** Alimento anotado à mão numa refeição; qty é texto livre ("150 g", "2 un"). */
+export interface Food extends Macros { id: string; day: string; at: number; meal: string; name: string; qty: string }
+export interface Meal { id: string; name: string }
 export type ThemePref = 'auto' | 'light' | 'dark';
 
 export interface Settings {
@@ -60,4 +64,7 @@ export interface Settings {
   theme: ThemePref;
   /** meta de peso corporal (kg) */
   weightGoalKg: number | null;
+  /** refeições do dia, na ordem */
+  meals: Meal[];
+  nutritionGoal: Macros | null;
 }

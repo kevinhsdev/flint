@@ -11,6 +11,7 @@ import { Empty } from '../../ui/Empty';
 import { Icon } from '../../ui/Icon';
 import { Sheet } from '../../ui/Sheet';
 import { useReorder } from '../../ui/useReorder';
+import { QuickLog } from './QuickLog';
 
 /** Letra do treino ("A — Peito" → "A"); sem letra, a inicial. */
 const badge = (name: string) => { const h = name.split(' — ')[0].trim(); return (h.length <= 2 ? h : h[0]).toUpperCase(); };
@@ -79,6 +80,7 @@ export default function Routine() {
           </div>
         </>
       )}
+      <QuickLog templates={data.templates} />
 
       <Sheet open={!!menu} onClose={closeMenu} title={confirm ? `Arquivar ${menu?.name}?` : menu?.name ?? ''}>
         {menu && !confirm && (

@@ -746,3 +746,17 @@ html { scroll-padding-bottom: calc(180px + var(--safe-bottom)); scroll-padding-t
 .week-bars small { position: absolute; bottom: -18px; font-size: 11px; color: var(--muted); font-weight: 700; text-transform: uppercase; }
 .week-bars .goal-line { position: absolute; left: 0; right: 0; height: 0; border-top: 1.5px dashed var(--faint); z-index: 1; pointer-events: none; }
 .row-2 + .field { margin-top: 14px; }
+.saved-meals { list-style: none; margin: 0 0 14px; padding: 0; display: grid; gap: 8px; }
+.saved-meals li { display: flex; align-items: center; gap: 4px; }
+.saved-meals li > button:first-child { flex: 1; display: grid; gap: 1px; text-align: left; padding: 10px 14px; border-radius: 14px; background: var(--surface-2); color: var(--text); }
+.saved-meals b { font-weight: 800; }
+.saved-meals small { color: var(--muted); font-size: 12px; font-weight: 600; }
+.saved-meals .icon-btn { color: var(--faint); }
+.diet-tile { display: block; text-decoration: none; }
+.diet-tile .dt { height: 6px; border-radius: 9px; background: rgba(0,0,0,.15); margin-top: 10px; overflow: hidden; }
+.diet-tile .dt i { display: block; height: 100%; border-radius: 9px; background: var(--ink-on-yellow); }
+.diet-tile .chev { position: absolute; top: 13px; right: 13px; width: 16px; height: 16px; opacity: .6; }
+.diet-weeks { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; height: 90px; margin-top: 12px; align-items: end; }
+.diet-weeks i { display: block; min-height: 3px; border-radius: 5px 5px 2px 2px; background: var(--surface-2); }
+.diet-weeks i.on { background: var(--yellow); }
+.diet-avg { margin: 6px 0 0; color: var(--muted); font-weight: 600; } .diet-avg b { color: var(--text); font-weight: 800; }

@@ -1,3 +1,4 @@
+import { addDays, weekStart } from './dates';
 import type { Food, Goal, Macros, Meal } from './types';
 
 const r1 = (n: number) => Math.round(n * 10) / 10;
@@ -46,4 +47,19 @@ export function kcalDays(foods: Food[], days: string[]): Record<string, number> 
   const out = Object.fromEntries(days.map(d => [d, 0]));
   for (const f of foods) if (f.day in out) out[f.day] += f.kcal;
   return out;
+}
+
+/** Evolução da dieta: média de kcal e proteína por dia anotado, semana a semana (seg–dom). */
+export function weeklyNutrition(foods: Food[], today: string, weeks = 8) {
+  const last = weekStart(today);
+  return Array.from({ length: weeks }, (_, i) => {
+    const week = addDays(last, -7 * (weeks - 1 - i)), end = addDays(week, 6);
+    const per = new Map<string, { kcal: number; p: number }>();
+    for (const f of foods) if (f.day >= week && f.day <= end) {
+      const d = per.get(f.day) ?? { kcal: 0, p: 0 };
+      per.set(f.day, { kcal: d.kcal + f.kcal, p: d.p + f.p });
+    }
+    const days = per.size, sum = [...per.values()];
+    return { week, kcal: days ? Math.round(sum.reduce((n, d) => n + d.kcal, 0) / days) : 0, p: days ? Math.round(sum.reduce((n, d) => n + d.p, 0) / days) : 0, days };
+  });
 }

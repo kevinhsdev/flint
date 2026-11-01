@@ -12,7 +12,7 @@ import { fmtNum } from '../../ui/NumberField';
 import { play } from '../../ui/sound';
 import { useToday } from '../../ui/useToday';
 import { WaterCard } from '../../water/WaterCard';
-import { FoodSheet, GoalSheet, MealsSheet } from './DietSheets';
+import { FoodSheet, GoalSheet, MealsSheet, SaveMealSheet } from './DietSheets';
 
 const MACROS = [['p', 'Proteína'], ['c', 'Carboidrato'], ['f', 'Gordura']] as const;
 const dayName = (day: string, today: string) => day === today ? 'Hoje' : day === addDays(today, -1) ? 'Ontem'
@@ -25,9 +25,10 @@ export default function Diet() {
   const [day, setDay] = useState(today);
   const [adding, setAdding] = useState<Meal | null>(null);
   const [sheet, setSheet] = useState<'goal' | 'meals' | null>(null);
+  const [saving, setSaving] = useState<Meal | null>(null);
   const d = useLiveQuery(async () => {
-    const [foods, water, weights, settings] = await Promise.all([db.foods.toArray(), db.water.where('day').equals(today).toArray(), db.weights.orderBy('day').toArray(), getSettings()]);
-    return { foods, water, settings, lastKg: weights.at(-1)?.kg };
+    const [foods, water, weights, settings, saved] = await Promise.all([db.foods.toArray(), db.water.where('day').equals(today).toArray(), db.weights.orderBy('day').toArray(), getSettings(), db.savedMeals.toArray()]);
+    return { foods, water, settings, saved, lastKg: weights.at(-1)?.kg };
   }, [today]);
   if (!d) return <main className="screen" />;
 
@@ -93,6 +94,7 @@ export default function Diet() {
             {meal.id && (
               <div className="meal-actions">
                 <button className="pill" aria-label={`Adicionar em ${meal.name}`} onClick={() => setAdding(meal)}><Icon name="plus" /> Adicionar</button>
+                {foods.length > 1 && <button className="pill" aria-label={`Salvar ${meal.name} como refeição pronta`} onClick={() => setSaving(meal)}>Salvar</button>}
                 {again && <button className="pill" aria-label={`Repetir ${meal.name.toLowerCase()} de ontem`} onClick={() => copyMeal(prev, day, meal.id)}><Icon name="undo" /> Repetir ontem</button>}
               </div>
             )}
@@ -103,7 +105,8 @@ export default function Diet() {
 
       <Week foods={d.foods} today={today} goal={goal} />
 
-      <FoodSheet meal={adding} day={day} foods={d.foods} onClose={() => setAdding(null)} />
+      <FoodSheet meal={adding} day={day} foods={d.foods} saved={d.saved} onClose={() => setAdding(null)} />
+      <SaveMealSheet meal={saving} foods={meals.find(m => m.meal.id === saving?.id)?.foods ?? []} onClose={() => setSaving(null)} />
       <GoalSheet open={sheet === 'goal'} onClose={() => setSheet(null)} settings={d.settings} kg={d.lastKg} />
       <MealsSheet open={sheet === 'meals'} onClose={() => setSheet(null)} meals={d.settings.meals} onSave={meals => saveSettings({ meals })} />
     </main>

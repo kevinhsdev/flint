@@ -3,9 +3,9 @@ import { DEFAULT_SETTINGS, ensureLibrary } from '../db/repo';
 import { CARDIO, CHALLENGE_KINDS, MEASURE_PARTS } from './types';
 
 const VERSION = 4; // v2: pesquisa, som, metas de carga, aquecimento · v3: medidas, desafios, meta de peso · v4: dieta
-const TABLES = ['exercises', 'templates', 'sessions', 'water', 'weights', 'kv', 'photos', 'measures', 'challenges', 'foods'] as const;
+const TABLES = ['exercises', 'templates', 'sessions', 'water', 'weights', 'kv', 'photos', 'measures', 'challenges', 'foods', 'savedMeals'] as const;
 /** Tabelas que backups antigos não têm: ausentes viram lista vazia. */
-const OPTIONAL: readonly string[] = ['photos', 'measures', 'challenges', 'foods'];
+const OPTIONAL: readonly string[] = ['photos', 'measures', 'challenges', 'foods', 'savedMeals'];
 type Table = (typeof TABLES)[number];
 
 async function toDataUrl(blob: Blob): Promise<string> {
@@ -67,6 +67,7 @@ const ROW: Record<Table, (r: Record<string, unknown>) => boolean> = {
   photos: r => str(r.id) && str(r.day) && str(r.data) && (r.data as string).startsWith('data:'),
   measures: r => str(r.id) && str(r.day) && oneOf(r.part, MEASURE_PARTS) && num(r.cm) && (r.cm as number) > 0,
   foods: r => str(r.id) && str(r.day) && num(r.at) && str(r.meal) && str(r.name) && str(r.qty) && macrosOk(r),
+  savedMeals: r => str(r.id) && str(r.name) && Array.isArray(r.foods) && r.foods.every(f => isObj(f) && str(f.name) && str(f.qty) && macrosOk(f)),
   challenges: r => str(r.id) && oneOf(r.kind, CHALLENGE_KINDS) && num(r.target) && (r.target as number) > 0 && str(r.startDay) && Number.isInteger(r.days) && (r.days as number) > 0,
 };
 

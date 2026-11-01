@@ -15,13 +15,15 @@ import { Calendar } from './Calendar';
 import { MuscleMap } from './MuscleMap';
 import { Photos } from './Photos';
 import { Lifetime, Measures } from './Measures';
+import { DietTrend } from './DietTrend';
+import { localDay } from '../../domain/dates';
 
 export default function Progress() {
   const d = useLiveQuery(async () => {
     const [sessions, library, weights, photos, settings] = await Promise.all([
       db.sessions.toArray(), db.exercises.toArray(), db.weights.toArray(), db.photos.toArray(), getSettings(),
     ]);
-    return { sessions, library, weights, photos, settings, water: await db.water.toArray(), measures: await db.measures.toArray() };
+    return { sessions, library, weights, photos, settings, water: await db.water.toArray(), measures: await db.measures.toArray(), foods: await db.foods.toArray() };
   }, []);
   if (!d) return <main className="screen" />;
 
@@ -69,6 +71,7 @@ export default function Progress() {
       <MuscleMap sessions={d.sessions} lib={d.library} />
       <BodyWeight weights={d.weights} heightCm={d.settings.heightCm} goalKg={d.settings.weightGoalKg} />
       <Measures measures={d.measures} />
+      <DietTrend foods={d.foods} today={localDay(new Date())} />
       <section className="card">
         <div className="card-head"><h2>Exercícios</h2></div>
         {exercises.length ? (

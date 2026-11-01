@@ -35,3 +35,21 @@ test('lista de exercícios só mostra os que têm histórico', async () => {
   expect(await screen.findByRole('link', { name: /Agachamento livre/ })).toBeInTheDocument();
   expect(screen.queryByRole('link', { name: /Supino reto com barra/ })).toBeNull();
 });
+
+test('recordes aparecem em cartões, um por exercício, o mais recente primeiro', async () => {
+  await wipeAll(); await loadDemo();
+  renderAt('/progresso');
+  const list = await screen.findByRole('list', { name: 'Recordes' });
+  const links = [...list.querySelectorAll('a')];
+  expect(links.length).toBeGreaterThan(0);
+  expect(links.length).toBeLessThanOrEqual(8);
+  const ids = links.map(a => a.getAttribute('href'));
+  expect(new Set(ids).size).toBe(ids.length);
+});
+
+test('sem recordes não mostra a seção', async () => {
+  await startFresh();
+  renderAt('/progresso');
+  expect(await screen.findByRole('heading', { name: 'Progresso' })).toBeInTheDocument();
+  expect(screen.queryByRole('list', { name: 'Recordes' })).toBeNull();
+});

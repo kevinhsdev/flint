@@ -47,9 +47,12 @@ export default function Water() {
 
   return (
     <main className="screen water-screen">
-      <h1 className="title">Água</h1>
+      <header className="rise">
+        <div className="eyebrow">{new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
+        <h1 className="title">Água</h1>
+      </header>
 
-      <section className="card water-hero">
+      <section className="card water-hero rise">
         <Glass ml={ml} goal={goal} />
         <div>
           <div className="big num" aria-label={`Bebido hoje: ${liters(ml)} de ${liters(goal)} litros`}>{liters(ml)}<small> / {liters(goal)} L</small></div>

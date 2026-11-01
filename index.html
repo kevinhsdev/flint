@@ -3,9 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#0E0A12" />
+    <meta name="theme-color" content="#E5163E" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="%APP_NAME%" />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
@@ -20,6 +20,8 @@
     <meta property="og:url" content="https://kevinhsdev.github.io/flint/" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content="https://kevinhsdev.github.io/flint/og.png" />
+      <!-- tema antes da 1ª pintura: segue o sistema até o app ler o Ajuste salvo -->
+    <script>document.documentElement.dataset.theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'</script>
   </head>
   <body>
     <div id="root"></div>

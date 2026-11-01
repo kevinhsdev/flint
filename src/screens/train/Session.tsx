@@ -7,7 +7,9 @@ import { lastEntryFor } from '../../domain/routine';
 import { plateau } from '../../domain/plateau';
 import { findPRs, isWork, suggestOverload, type PR } from '../../domain/strength';
 import { deloadKg, warmupSets } from '../../domain/warmup';
-import type { Exercise, Session, SetLog, Template, TemplateItem } from '../../domain/types';
+import type { Entry, Exercise, Session, SetLog, Template, TemplateItem } from '../../domain/types';
+import { photoFor } from '../../domain/photos';
+import { FeatureCard } from '../../ui/FeatureCard';
 import type { StageId } from '../../domain/rules';
 import { Mascot } from '../../mascots/Mascot';
 import type { MascotAct } from '../../mascots/engine';
@@ -26,6 +28,12 @@ interface Ctx { history: Session[]; lib: Map<string, Exercise>; tpl?: Template; 
 
 const sessionPRs = (s: Session, history: Session[]) =>
   findPRs([...history, { ...s, endedAt: s.endedAt ?? Date.now() }]).filter(p => p.sessionId === s.id);
+
+/** O exercício da vez: o primeiro com alguma série pendente; tudo feito, o último. */
+export function currentEntryIndex(entries: Entry[]): number {
+  const i = entries.findIndex(e => e.sets.some(x => !x.done));
+  return i >= 0 ? i : Math.max(0, entries.length - 1);
+}
 
 export default function SessionScreen() {
   const nav = useNavigate();
@@ -104,6 +112,7 @@ export default function SessionScreen() {
   const prs = sessionPRs(s, ctx.history);
   const isPR = (exerciseId: string, x: SetLog) => isWork(x) && prs.some(p => p.exerciseId === exerciseId && p.kg === x.kg && p.reps === x.reps);
   const doneCount = s.entries.reduce((n, e) => n + e.sets.filter(isWork).length, 0);
+  const cur = currentEntryIndex(s.entries);
   const now = new Date();
   // aquecimento pela carga de trabalho da primeira série (já vem com a sugestão da Pedra)
   const workKg = (ei: number) => s.entries[ei].sets.find(x => !x.warmup)?.kg ?? 0;
@@ -159,15 +168,15 @@ export default function SessionScreen() {
 
   return (
     <main className="screen session">
-      <header className="screen-head">
-        <div className="session-title">
-          <Mascot kind="pedra" size={52} act={pedra} interactive={false} />
-          <div><small className="muted">{editing ? 'Editando' : 'Em andamento'}</small><h1 className="title sm">{s.name}</h1></div>
-        </div>
-        {editing
-          ? <button className="icon-btn" aria-label="Cancelar edição" onClick={() => nav('/treino/historico')}><Icon name="close" /></button>
-          : <button className="icon-btn" aria-label="Opções do treino" onClick={() => setMenu(true)}><Icon name="more" /></button>}
-      </header>
+      <FeatureCard
+        photo={s.entries.length ? photoFor(ctx.lib.get(s.entries[cur].exerciseId)?.primary) : 'corpo'}
+        eyebrow={editing ? 'Editando' : s.entries.length ? `Exercício ${cur + 1} de ${s.entries.length}` : 'Em andamento'}
+        title={s.name}
+        peek={<Mascot kind="pedra" size={52} act={pedra} interactive={false} />}
+        meta={s.entries.length ? `Agora: ${ctx.lib.get(s.entries[cur].exerciseId)?.name ?? 'exercício'} · ${doneCount} ${doneCount === 1 ? 'série feita' : 'séries feitas'}` : 'Adicione os exercícios que for fazendo'}
+        action={editing
+          ? <button className="icon-btn on-photo" aria-label="Cancelar edição" onClick={() => nav('/treino/historico')}><Icon name="close" /></button>
+          : <button className="icon-btn on-photo" aria-label="Opções do treino" onClick={() => setMenu(true)}><Icon name="more" /></button>} />
 
       {s.entries.map((e, ei) => {
         const ex = ctx.lib.get(e.exerciseId), item = itemOf(e.exerciseId), last = lastEntryFor(e.exerciseId, ctx.history);
@@ -175,7 +184,7 @@ export default function SessionScreen() {
         const lastWork = last?.sets.filter(x => !x.warmup);
         let wn = 0, an = 0; // numeração separada: aquecimento "Aq", trabalho 1, 2, 3…
         return (
-          <section key={ei} className="ex-card">
+          <section key={ei} className={`ex-card${ei === cur && !editing ? ' now' : ''}`}>
             <div className="ex-head">
               <b>{ex?.name ?? 'Exercício'}</b>
               {plateau(e.exerciseId, ctx.history, now) && <button className="badge-stuck" onClick={() => setStuck(ei)}>Platô</button>}

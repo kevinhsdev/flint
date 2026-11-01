@@ -12,7 +12,10 @@ import { fmtNum, NumberField } from '../../ui/NumberField';
 import { Sheet } from '../../ui/Sheet';
 import { shareFile } from '../../share/share';
 import { play, setSoundEnabled } from '../../ui/sound';
+import { applyTheme } from '../../ui/theme';
+import type { ThemePref } from '../../domain/types';
 
+const THEMES: [ThemePref, string][] = [['auto', 'Automático'], ['light', 'Claro'], ['dark', 'Escuro']];
 const DAYS: [number, string][] = [[1, 'Seg'], [2, 'Ter'], [3, 'Qua'], [4, 'Qui'], [5, 'Sex'], [6, 'Sáb'], [0, 'Dom']];
 
 export default function Settings() {
@@ -71,6 +74,16 @@ export default function Settings() {
       </section>
 
       <section className="card">
+        <h2>Tema</h2>
+        <div className="seg" role="group" aria-label="Tema">
+          {THEMES.map(([v, l]) => (
+            <button key={v} className={s.theme === v ? 'on' : ''} aria-pressed={s.theme === v}
+              onClick={() => { applyTheme(v); void saveSettings({ theme: v }); }}>{l}</button>
+          ))}
+        </div>
+      </section>
+
+      <section className="card">
         <div className="switch-row">
           <div><h2>Sons</h2><p className="muted">Série feita, recorde, água e fim de treino.</p></div>
           <button className="switch" role="switch" aria-checked={s.sound} aria-label="Sons"
@@ -114,7 +127,7 @@ export default function Settings() {
         <p className="muted">O backup substitui os dados deste aparelho: treinos, água e peso. Fotos só são trocadas se o backup tiver fotos.</p>
         <div className="row-2">
           <button className="btn ghost" onClick={() => setPending(null)}>Cancelar</button>
-          <button className="btn" onClick={async () => { const r = await importBackup(pending!); setPending(null); setMsg(r.ok ? 'Backup restaurado.' : r.error); if (r.ok) setSoundEnabled((await getSettings()).sound); }}>Substituir</button>
+          <button className="btn" onClick={async () => { const r = await importBackup(pending!); setPending(null); setMsg(r.ok ? 'Backup restaurado.' : r.error); if (r.ok) { const n = await getSettings(); setSoundEnabled(n.sound); applyTheme(n.theme); } }}>Substituir</button>
         </div>
       </Sheet>
 

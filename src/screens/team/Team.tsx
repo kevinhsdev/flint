@@ -32,7 +32,7 @@ export default function Team() {
       </header>
 
       <div className="spot">
-        <div className="glow-fire"><Mascot kind="faisca" size={170} stage={stage} mood={mood(d.sessions, d.settings.trainDays, now)} /></div>
+        <div><Mascot kind="faisca" size={170} stage={stage} mood={mood(d.sessions, d.settings.trainDays, now)} /></div>
         <h2 className="name">{cur.name}</h2>
         <div className="lv">Estágio {idx + 1} de {RULES.stages.length} · {weeks} {weeks === 1 ? 'semana' : 'semanas'} na meta</div>
         <div className="xp">
@@ -50,8 +50,8 @@ export default function Team() {
       </ul>
 
       <div className="pair">
-        <div className="tile mate"><div className="glow-water"><Mascot kind="gota" size={52} /></div><div><b>Gota</b><span>Cuida da água</span></div></div>
-        <div className="tile mate"><div className="glow-steel"><Mascot kind="pedra" size={52} /></div><div><b>Pedra</b><span>Guarda recordes</span></div></div>
+        <div className="tile blue mate"><div><Mascot kind="gota" size={52} /></div><div><b>Gota</b><span>Cuida da água</span></div></div>
+        <div className="tile black mate"><div><Mascot kind="pedra" size={52} /></div><div><b>Pedra</b><span>Guarda recordes</span></div></div>
       </div>
 
       <Medals game={d} />

@@ -12,15 +12,15 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'icons/*.png'],
-      workbox: { globPatterns: ['**/*.{js,css,html,svg,png,woff2}'] },
+      workbox: { globPatterns: ['**/*.{js,css,html,svg,png,webp,woff2}'] },
       manifest: {
         name: APP_NAME,
         short_name: APP_NAME,
         lang: 'pt-BR',
         display: 'standalone',
         start_url: './',
-        background_color: '#0E0A12',
-        theme_color: '#0E0A12',
+        background_color: '#f2f2f7',
+        theme_color: '#f2f2f7',
         icons: [
           { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' },
@@ -33,6 +33,7 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['tests/setup.ts'],
+    css: { include: [/styles\/(global|tokens)\.css/] }, // estilos.test lê o CSS cru
     // telas que abrem o banco ficam lentas com muitos arquivos jsdom em paralelo
     testTimeout: 30_000,
     maxWorkers: 4,

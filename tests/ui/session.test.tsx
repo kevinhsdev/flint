@@ -2,6 +2,8 @@ import { screen } from '@testing-library/react';
 import { renderAt } from './render';
 import { startFresh, startSession, upsertTemplate } from '../../src/db/repo';
 import { db } from '../../src/db/db';
+import { currentEntryIndex } from '../../src/screens/train/Session';
+import { entry } from '../domain/helpers';
 
 beforeEach(async () => {
   await startFresh();
@@ -39,4 +41,22 @@ test('finalizar mostra o resumo com volume e XP', async () => {
   expect(await screen.findByText('Treino concluído')).toBeInTheDocument();
   expect(screen.getByText('600 kg')).toBeInTheDocument();
   expect(screen.getByText(/\+120 XP/)).toBeInTheDocument();
+});
+
+test('exercício atual é o primeiro com série pendente', () => {
+  expect(currentEntryIndex([entry([[60, 10]]), entry([[60, 10], [60, 0, false]])])).toBe(1);
+  expect(currentEntryIndex([entry([[60, 10]]), entry([[60, 10]])])).toBe(1);
+  expect(currentEntryIndex([])).toBe(0);
+});
+
+test('treino livre mostra a foto de corpo todo', async () => {
+  const { container } = renderAt('/treino/sessao?start=livre');
+  expect(await screen.findByRole('heading', { name: 'Treino livre' })).toBeInTheDocument();
+  expect(container.querySelector('[data-photo="corpo"]')).not.toBeNull();
+});
+
+test('sessão mostra a foto do grupo do exercício atual', async () => {
+  const { container } = renderAt('/treino/sessao?start=tA');
+  expect(await screen.findByRole('heading', { name: 'A — Peito' })).toBeInTheDocument();
+  expect(container.querySelector('[data-photo="peito"]')).not.toBeNull();
 });

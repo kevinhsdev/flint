@@ -5,11 +5,15 @@ import { db } from '../../db/db';
 import { archiveTemplate, duplicateTemplate, getActiveSession, reorderTemplates } from '../../db/repo';
 import { nextTemplate } from '../../domain/routine';
 import { MUSCLE_NAMES } from '../../domain/exercises';
+import { photoUrl, templatePhoto } from '../../domain/photos';
 import type { Exercise, Template } from '../../domain/types';
 import { Empty } from '../../ui/Empty';
 import { Icon } from '../../ui/Icon';
 import { Sheet } from '../../ui/Sheet';
 import { useReorder } from '../../ui/useReorder';
+
+/** Letra do treino ("A — Peito" → "A"); sem letra, a inicial. */
+const badge = (name: string) => { const h = name.split(' — ')[0].trim(); return (h.length <= 2 ? h : h[0]).toUpperCase(); };
 
 export const startPath = (templateId: string | null) => `/treino/sessao?start=${templateId ?? 'livre'}`;
 
@@ -58,6 +62,7 @@ export default function Routine() {
             {rows.map((t, i) => (
               <li key={t.id} data-reorder className={`tpl${t.id === next?.id ? ' next' : ''}${dragging === i ? ' dragging' : ''}`}>
                 <span className="grip" aria-label={`Arrastar ${t.name}`} {...grip(i)}><Icon name="grip" /></span>
+                <span className={`tpl-badge c${i % 4}`} aria-hidden="true">{badge(t.name)}</span>
                 <div className="tpl-body">
                   {t.id === next?.id && <span className="tag">Próximo</span>}
                   <b>{t.name}</b>

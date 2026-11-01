@@ -37,3 +37,17 @@ test('coachLine escolhe a fala pela situação', () => {
   expect(coachLine({ ...base, mood: 'sad' })).toBe('Saudade de você na academia…');
   expect(coachLine({ ...base, hasRoutine: false })).toBe('Bora montar sua primeira rotina?');
 });
+
+test('próximo treino aparece no cartão com foto', async () => {
+  await wipeAll(); await loadDemo();
+  const { container } = render(<App />);
+  expect(await screen.findByRole('button', { name: 'Começar' }, { timeout: 15000 })).toBeInTheDocument();
+  expect(container.querySelector('[data-photo]')?.getAttribute('data-photo')).toMatch(/^(peito|costas|pernas|ombros|bracos|abdomen|geral)$/);
+});
+
+test('sem rotina o cartão é vermelho e chama pra montar', async () => {
+  await startFresh(); await saveSettings({ onboarded: true });
+  const { container } = render(<App />);
+  expect(await screen.findByRole('button', { name: 'Montar rotina' }, { timeout: 15000 })).toBeInTheDocument();
+  expect(container.querySelector('[data-photo]')?.getAttribute('data-photo')).toBe('none');
+});

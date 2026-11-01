@@ -38,7 +38,7 @@ export function TabBar() {
     <nav aria-label="Principal" className={`tabbar${away ? ' away' : ''}`} style={{ '--i': Math.max(0, active) } as CSSProperties}>
       {active >= 0 && <span className="tab-pill" aria-hidden="true" />}
       {TABS.map(([to, label, icon]) => (
-        <NavLink key={to} to={to} end={to === '/'} className={({ isActive }) => (isActive ? 'on' : undefined)}>
+        <NavLink key={to} to={to} end={to === '/'} viewTransition className={({ isActive }) => (isActive ? 'on' : undefined)}>
           <span className={`ti ti-${icon}`}><Icon name={icon} /></span>
           {label}
         </NavLink>

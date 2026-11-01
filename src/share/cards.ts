@@ -9,7 +9,7 @@ import { fmtNum } from '../ui/NumberField';
 
 const W = 1080, H = 1920;
 const FONT = '"Archivo Variable", system-ui, sans-serif';
-const CRIMSON = '#E5163E';
+const CRIMSON = '#E5163E', YELLOW = '#FFD43B', SOFT = 'rgba(255,255,255,.78)';
 
 const loadImg = (src: string) => new Promise<HTMLImageElement>((ok, fail) => {
   const img = new Image(); img.onload = () => ok(img); img.onerror = fail; img.src = src;
@@ -34,13 +34,11 @@ async function canvas() {
   const c = document.createElement('canvas');
   c.width = W; c.height = H;
   const ctx = c.getContext('2d')!;
-  ctx.fillStyle = '#0B0709'; ctx.fillRect(0, 0, W, H);
-  // brilho Sangue Real no alto e um eco embaixo
-  for (const [x, y, r, a] of [[W * 0.7, -100, 1300, 0.42], [W * 0.1, H + 200, 1000, 0.18]] as const) {
-    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-    g.addColorStop(0, `rgba(229,22,62,${a})`); g.addColorStop(1, 'rgba(229,22,62,0)');
-    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-  }
+  // bloco vermelho, como a tela de fim do treino, com uma sombra leve embaixo
+  ctx.fillStyle = CRIMSON; ctx.fillRect(0, 0, W, H);
+  const g = ctx.createLinearGradient(0, H * 0.55, 0, H);
+  g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.22)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
   ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
   return { c, ctx };
 }
@@ -69,7 +67,10 @@ async function footer(ctx: Ctx) {
   const logo = await loadImg(`${import.meta.env.BASE_URL}favicon.svg`).catch(() => null);
   ctx.font = `900 54px ${FONT}`; ctx.fontStretch = 'expanded'; ctx.letterSpacing = '0px';
   const label = 'Flint', tw = ctx.measureText(label).width, size = 72, gap = 18, x = (W - size - gap - tw) / 2;
-  if (logo) ctx.drawImage(logo, x, H - 196, size, size);
+  if (logo) {
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.roundRect(x - 8, H - 204, size + 16, size + 16, 22); ctx.fill();
+    ctx.drawImage(logo, x + 6, H - 190, size - 12, size - 12);
+  }
   ctx.textAlign = 'left'; ctx.fillStyle = '#fff'; ctx.fillText(label, x + size + gap, H - 140);
   ctx.textAlign = 'center';
 }
@@ -78,19 +79,19 @@ const toPng = (c: HTMLCanvasElement) => new Promise<Blob>((ok, fail) => c.toBlob
 
 export async function prCard(pr: PR, exerciseName: string, stage: StageId): Promise<Blob> {
   const { c, ctx } = await canvas();
-  text(ctx, 'NOVO RECORDE', 250, 44, { weight: 800, color: CRIMSON, spacing: 10 });
+  text(ctx, 'NOVO RECORDE', 250, 44, { weight: 800, color: YELLOW, spacing: 10 });
   ctx.drawImage(await mascotImage('faisca', stage, 640), (W - 640) / 2, 330, 640, 640);
   lines(ctx, exerciseName, 76).forEach((l, i) => text(ctx, l, 1130 + i * 92, 76, { weight: 800 }));
   text(ctx, `${fmtNum(pr.kg)} kg`, 1440, 200, { wide: true });
-  text(ctx, `× ${pr.reps} ${pr.reps === 1 ? 'repetição' : 'repetições'}`, 1540, 64, { weight: 700, color: '#FFB3C1' });
-  text(ctx, new Date(pr.at).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' }), 1620, 40, { weight: 600, color: '#9C8E95' });
+  text(ctx, `× ${pr.reps} ${pr.reps === 1 ? 'repetição' : 'repetições'}`, 1540, 64, { weight: 700, color: SOFT });
+  text(ctx, new Date(pr.at).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' }), 1620, 40, { weight: 600, color: SOFT });
   await footer(ctx);
   return toPng(c);
 }
 
 export async function wrappedCard(w: Wrapped, monthLabel: string, stage: StageId = 'faisca'): Promise<Blob> {
   const { c, ctx } = await canvas();
-  text(ctx, 'MINHA RETROSPECTIVA', 230, 42, { weight: 800, color: CRIMSON, spacing: 10 });
+  text(ctx, 'MINHA RETROSPECTIVA', 230, 42, { weight: 800, color: YELLOW, spacing: 10 });
   text(ctx, monthLabel[0].toUpperCase() + monthLabel.slice(1), 380, 150, { wide: true });
   ctx.drawImage(await mascotImage('faisca', stage, 560), (W - 560) / 2, 380, 560, 560);
   const tiles: [string, string][] = [
@@ -104,12 +105,12 @@ export async function wrappedCard(w: Wrapped, monthLabel: string, stage: StageId
   const tw = 440, th = 200, gx = 40, x0 = (W - 2 * tw - gx) / 2;
   tiles.forEach(([big, small], i) => {
     const x = x0 + (i % 2) * (tw + gx), y = 920 + Math.floor(i / 2) * (th + 32);
-    ctx.fillStyle = 'rgba(255,255,255,.06)';
+    ctx.fillStyle = 'rgba(255,255,255,.16)';
     ctx.beginPath(); ctx.roundRect(x, y, tw, th, 36); ctx.fill();
     ctx.textAlign = 'left';
     ctx.font = `900 ${big.length > 7 ? 64 : 88}px ${FONT}`; ctx.fontStretch = 'expanded'; ctx.letterSpacing = '0px'; ctx.fillStyle = '#fff';
     ctx.fillText(big, x + 36, y + 112, tw - 72);
-    ctx.font = `700 32px ${FONT}`; ctx.fontStretch = 'normal'; ctx.fillStyle = '#B9AAB1';
+    ctx.font = `700 32px ${FONT}`; ctx.fontStretch = 'normal'; ctx.fillStyle = SOFT;
     ctx.fillText(small, x + 36, y + 162, tw - 72);
     ctx.textAlign = 'center';
   });

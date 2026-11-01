@@ -2,6 +2,7 @@ import { lazy, useEffect, useRef, useState } from 'react';
 import { HashRouter, Route, Routes, useNavigate } from 'react-router';
 import { boot, getSettings } from './db/repo';
 import { setSoundEnabled } from './ui/sound';
+import { applyTheme } from './ui/theme';
 import { LoadingScreen } from './ui/LoadingScreen';
 import { TabBar } from './ui/TabBar';
 import { ErrorBoundary } from './ui/ErrorBoundary';
@@ -62,7 +63,7 @@ export default function App() {
     // o carregamento fica pelo menos um instante, pra não piscar
     Promise.all([boot(), new Promise(r => setTimeout(r, MIN_LOADING_MS))]).then(([next]) => {
       setSurvey(next === 'survey');
-      void getSettings().then(s => setSoundEnabled(s.sound));
+      void getSettings().then(s => { setSoundEnabled(s.sound); applyTheme(s.theme); });
       setPhase('leaving');
       setTimeout(() => setPhase('ready'), 260);
     });

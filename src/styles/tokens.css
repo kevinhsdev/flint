@@ -1,12 +1,27 @@
+/* Tema claro (padrão) — linguagem App Store + blocos coloridos */
 :root {
-  color-scheme: dark;
-  --bg: #0E0A12; --surface: #17111D; --surface-2: #211929; --line: rgba(255,235,245,.07);
-  --text: #F5F0F7; --muted: #A193AA; --faint: #6E6177;
-  --crimson: #E5163E; --crimson-hi: #FF4D6D; --crimson-lo: #8E0B26;
-  --gold: #F5B700; --gold-hi: #FFE38A; --water: #3B82F6; --water-hi: #8CB8FF;
-  --ease-out: cubic-bezier(.23, 1, .32, 1);
+  color-scheme: light;
+  --bg: #f2f2f7; --surface: #fff; --surface-2: #e9e9ee; --line: rgba(0,0,0,.08);
+  --text: #111; --muted: #8e8e93; --faint: #c7c7cc;
+  --bar: rgba(249,249,249,.88); --scrim: rgba(0,0,0,.35);
+  --card-shadow: 0 4px 14px rgba(0,0,0,.05); --feat-shadow: 0 14px 34px rgba(0,0,0,.18);
+  --crimson: #E5163E; --crimson-hi: #E5163E; --crimson-lo: #B80F30;
+  --yellow: #ffd43b; --blue: #1c7ed6; --black: #111; --ink-on-yellow: #111;
+  --gold: #F5B700; --gold-hi: #FFE38A; --water: #1c7ed6; --water-hi: #8CB8FF;
+  --ease-out: cubic-bezier(.2, .8, .2, 1);
   --ease-drawer: cubic-bezier(.32, .72, 0, 1);
   --font: "Archivo Variable", system-ui, sans-serif;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #000; --surface: #1c1c1e; --surface-2: #2c2c2e; --line: rgba(255,255,255,.09);
+  --text: #fff; --muted: #8e8e93; --faint: #48484a;
+  --bar: rgba(22,22,24,.88); --scrim: rgba(0,0,0,.6);
+  --card-shadow: none; --feat-shadow: 0 14px 34px rgba(0,0,0,.5);
+  --crimson-hi: #FF375F;
+  --yellow: #ffcc00; --blue: #0a84ff; --black: #2c2c2e;
+  --water: #0a84ff;
 }

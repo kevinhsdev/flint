@@ -6,7 +6,7 @@ import { makeSeed } from '../domain/seed';
 import { lastEntryFor } from '../domain/routine';
 import { suggestOverload } from '../domain/strength';
 import { generatePlan } from '../domain/plan';
-import type { Entry, Exercise, Profile, Session, Settings, Template } from '../domain/types';
+import type { Challenge, Entry, Exercise, MeasurePart, Profile, Session, Settings, Template } from '../domain/types';
 
 export const uid = () => crypto.randomUUID();
 
@@ -71,6 +71,17 @@ export async function logWeight(kg: number, day: string) {
   const same = await db.weights.where('day').equals(day).first();
   await db.weights.put({ id: same?.id ?? uid(), day, kg });
 }
+
+/** Medidas do dia (cm por parte); a mesma parte no mesmo dia substitui. */
+export async function logMeasures(day: string, cm: Partial<Record<MeasurePart, number>>) {
+  await db.transaction('rw', db.measures, async () => {
+    const today = await db.measures.where('day').equals(day).toArray();
+    await db.measures.bulkPut(Object.entries(cm).map(([part, v]) => ({ id: today.find(m => m.part === part)?.id ?? uid(), day, part: part as MeasurePart, cm: v! })));
+  });
+}
+
+export const addChallenge = (c: Omit<Challenge, 'id' | 'startDay'>, startDay: string) => db.challenges.add({ ...c, id: uid(), startDay });
+export const deleteChallenge = (id: string) => db.challenges.delete(id);
 
 export const addPhoto = (blob: Blob, day: string) => db.photos.add({ id: uid(), day, blob });
 export const deletePhoto = (id: string) => db.photos.delete(id);

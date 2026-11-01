@@ -1,9 +1,11 @@
 import { db } from '../db/db';
 import { DEFAULT_SETTINGS, ensureLibrary } from '../db/repo';
-import { CARDIO } from './types';
+import { CARDIO, CHALLENGE_KINDS, MEASURE_PARTS } from './types';
 
-const VERSION = 2; // v2: pesquisa (profile/onboarded), som, metas de carga, séries de aquecimento
-const TABLES = ['exercises', 'templates', 'sessions', 'water', 'weights', 'kv', 'photos'] as const;
+const VERSION = 3; // v2: pesquisa, som, metas de carga, aquecimento · v3: medidas, desafios, meta de peso
+const TABLES = ['exercises', 'templates', 'sessions', 'water', 'weights', 'kv', 'photos', 'measures', 'challenges'] as const;
+/** Tabelas que backups antigos não têm: ausentes viram lista vazia. */
+const OPTIONAL: readonly string[] = ['photos', 'measures', 'challenges'];
 type Table = (typeof TABLES)[number];
 
 async function toDataUrl(blob: Blob): Promise<string> {
@@ -49,7 +51,8 @@ const settingsOk = (v: unknown) => isObj(v)
   && (!('trainTime' in v) || str(v.trainTime)) && (!('demo' in v) || typeof v.demo === 'boolean')
   && (!('notif' in v) || isObj(v.notif)) && (!('onboarded' in v) || typeof v.onboarded === 'boolean')
   && (!('profile' in v) || profileOk(v.profile)) && (!('sound' in v) || typeof v.sound === 'boolean')
-  && (!('targets' in v) || (isObj(v.targets) && Object.values(v.targets).every(num)));
+  && (!('targets' in v) || (isObj(v.targets) && Object.values(v.targets).every(num)))
+  && (!('weightGoalKg' in v) || numOrNull(v.weightGoalKg));
 const ROW: Record<Table, (r: Record<string, unknown>) => boolean> = {
   exercises: r => str(r.id) && str(r.name) && str(r.primary),
   templates: r => str(r.id) && str(r.name) && Array.isArray(r.items),
@@ -59,6 +62,8 @@ const ROW: Record<Table, (r: Record<string, unknown>) => boolean> = {
   weights: r => str(r.id) && str(r.day) && num(r.kg),
   kv: r => str(r.key) && (r.key !== 'settings' || settingsOk(r.value)),
   photos: r => str(r.id) && str(r.day) && str(r.data) && (r.data as string).startsWith('data:'),
+  measures: r => str(r.id) && str(r.day) && oneOf(r.part, MEASURE_PARTS) && num(r.cm) && (r.cm as number) > 0,
+  challenges: r => str(r.id) && oneOf(r.kind, CHALLENGE_KINDS) && num(r.target) && (r.target as number) > 0 && str(r.startDay) && Number.isInteger(r.days) && (r.days as number) > 0,
 };
 
 /**
@@ -73,7 +78,7 @@ export async function importBackup(file: Blob): Promise<{ ok: true } | { ok: fal
   const data = json.data;
   if (!isObj(data)) return { ok: false, error: 'Backup incompleto.' };
   for (const t of TABLES) {
-    const rows = t === 'photos' ? data[t] ?? [] : data[t];
+    const rows = OPTIONAL.includes(t) ? data[t] ?? [] : data[t];
     if (!Array.isArray(rows)) return { ok: false, error: 'Backup incompleto.' };
     if (!rows.every(r => isObj(r) && ROW[t](r))) return { ok: false, error: `Backup com dados inválidos (${t}).` };
   }

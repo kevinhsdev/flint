@@ -13,4 +13,5 @@ export const DEFAULT_SETTINGS: Settings = {
   sound: true,
   targets: {},
   theme: 'auto',
+  weightGoalKg: null,
 };

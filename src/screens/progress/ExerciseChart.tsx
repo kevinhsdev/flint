@@ -55,7 +55,7 @@ export function LineChart({ values, avg, goal, label, unit = 'kg' }: { values: n
   );
 }
 
-const METRICS = [['maxKg', 'Carga máx'], ['e1rm', '1RM'], ['volume', 'Volume']] as const;
+const METRICS = [['maxKg', 'Carga máx'], ['e1rm', '1RM'], ['volume', 'Volume'], ['sets', 'Séries']] as const;
 const day = (d: string) => parseDay(d).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' }).replace('.', '');
 
 export default function ExerciseScreen() {
@@ -72,6 +72,7 @@ export default function ExerciseScreen() {
   const forecast = !target ? null : !fc ? 'Ainda sem tendência clara (treine mais algumas vezes).'
     : 'reached' in fc ? 'Meta batida!' : `No ritmo atual, ~${fc.weeks} ${fc.weeks === 1 ? 'semana' : 'semanas'}.`;
   const stuck = plateau(id, d.sessions, new Date());
+  const unit = metric === 'sets' ? 'séries' : 'kg';
 
   return (
     <main className="screen">
@@ -85,8 +86,8 @@ export default function ExerciseScreen() {
       </div>
       <section className="card">
         {series.length ? <>
-          <div className="big num">{fmtNum(values.at(-1)!)}<small> kg</small></div>
-          <LineChart values={values} goal={metric === 'maxKg' && fc && 'weeks' in fc ? target! : undefined} label={METRICS.find(m => m[0] === metric)![1]} />
+          <div className="big num">{fmtNum(values.at(-1)!)}<small> {unit}</small></div>
+          <LineChart values={values} unit={unit} goal={metric === 'maxKg' && fc && 'weeks' in fc ? target! : undefined} label={METRICS.find(m => m[0] === metric)![1]} />
           <div className="axis muted"><span>{day(series[0].day)}</span><span>{day(series.at(-1)!.day)}</span></div>
         </> : <p className="muted">Ainda sem séries concluídas deste exercício.</p>}
       </section>

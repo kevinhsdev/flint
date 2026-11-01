@@ -35,6 +35,14 @@ export interface Session {
 export interface WaterLog { id: string; day: string; at: number; ml: number }
 export interface WeightLog { id: string; day: string; kg: number }
 export interface Photo { id: string; day: string; blob: Blob }
+export const MEASURE_PARTS = ['peito', 'cintura', 'quadril', 'braco', 'coxa', 'panturrilha'] as const;
+export type MeasurePart = (typeof MEASURE_PARTS)[number];
+/** Uma medida por parte por dia: registrar de novo substitui. */
+export interface Measure { id: string; day: string; part: MeasurePart; cm: number }
+export const CHALLENGE_KINDS = ['treinos', 'series', 'cardio', 'agua'] as const;
+export type ChallengeKind = (typeof CHALLENGE_KINDS)[number];
+/** Meta com prazo: `target` dentro de `days` dias a partir de `startDay`. O progresso sai dos registros. */
+export interface Challenge { id: string; kind: ChallengeKind; target: number; startDay: string; days: number }
 export type ThemePref = 'auto' | 'light' | 'dark';
 
 export interface Settings {
@@ -50,4 +58,6 @@ export interface Settings {
   /** carga-alvo por exercício (previsão de meta) */
   targets: Record<string, number>;
   theme: ThemePref;
+  /** meta de peso corporal (kg) */
+  weightGoalKg: number | null;
 }

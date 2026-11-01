@@ -31,6 +31,7 @@ export function exerciseSeries(exerciseId: string, sessions: Session[]) {
         maxKg: Math.max(...sets.map(x => x.kg)),
         e1rm: Math.max(...sets.map(x => epley(x.kg, x.reps))),
         volume: sets.reduce((v, x) => v + x.kg * x.reps, 0),
+        sets: sets.length,
       }];
     });
 }

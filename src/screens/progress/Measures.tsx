@@ -59,8 +59,8 @@ export function Lifetime({ sessions }: { sessions: Session[] }) {
   const items: [string, string][] = [
     [fmtNum(t.workouts), t.workouts === 1 ? 'treino' : 'treinos'],
     [fmtNum(t.sets), 'séries'],
-    [`${fmtNum(t.tonnes)} t`, 'levantadas'],
-    [`${fmtNum(t.hours)} h`, 'treinando'],
+    [t.kg < 1000 ? `${fmtNum(t.kg)} kg` : `${fmtNum(Math.round(t.kg / 100) / 10)} t`, 'levantados'],
+    [t.min < 60 ? `${t.min} min` : `${fmtNum(Math.round(t.min / 6) / 10)} h`, 'treinando'],
     [`${fmtNum(t.km)} km`, 'de cardio'],
   ];
   return (

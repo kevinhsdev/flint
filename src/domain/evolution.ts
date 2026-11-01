@@ -45,8 +45,8 @@ export function lifetimeTotals(sessions: Session[]) {
   return {
     workouts: done.length,
     sets: sets.length,
-    tonnes: Math.round(sets.reduce((v, x) => v + x.kg * x.reps, 0) / 100) / 10,
-    hours: Math.round(done.reduce((h, s) => h + (s.endedAt! - s.startedAt), 0) / 360_000) / 10,
+    kg: Math.round(sets.reduce((v, x) => v + x.kg * x.reps, 0)),
+    min: Math.round(done.reduce((m, s) => m + (s.endedAt! - s.startedAt), 0) / 60_000),
     km: Math.round(done.reduce((k, s) => k + (s.cardio?.km ?? 0), 0) * 10) / 10,
   };
 }

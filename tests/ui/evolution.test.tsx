@@ -3,7 +3,7 @@ import { renderAt } from './render';
 import { db } from '../../src/db/db';
 import { addChallenge, getSettings, logMeasures, logWeight, saveSettings, startFresh } from '../../src/db/repo';
 import { addDays, localDay } from '../../src/domain/dates';
-import { cardioSession } from '../../src/domain/training';
+import { cardioSession, checkinSession } from '../../src/domain/training';
 
 const today = localDay(new Date());
 const noon = new Date(`${today}T12:00`); // longe da meia-noite: o treino cai em hoje
@@ -78,4 +78,12 @@ test('desafio batido aparece como concluído', async () => {
   renderAt('/time');
   const item = await screen.findByRole('listitem', { name: /1 treino em 7 dias/ });
   expect(within(item).getByText('Concluído')).toBeInTheDocument();
+});
+
+test('seus números: pouco volume aparece em kg e min, não "0 t" e "0 h"', async () => {
+  await db.sessions.add(checkinSession('A', null, 25, noon));
+  renderAt('/progresso');
+  const list = within((await screen.findByRole('heading', { name: 'Seus números' })).closest('section')!);
+  expect(list.getByText('0 kg')).toBeInTheDocument();
+  expect(list.getByText('25 min')).toBeInTheDocument();
 });

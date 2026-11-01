@@ -44,7 +44,7 @@ test('medidas: último valor de cada parte e a diferença pro primeiro', () => {
 test('seus números: treinos, séries, toneladas, horas e km de cardio da vida toda', () => {
   const t = lifetimeTotals([lift('2026-10-01', 3), lift('2026-10-02', 2), cardioSession({ type: 'corrida', min: 30, km: 5 }), checkinSession('B', null, 60),
     { ...lift('2026-10-03', 9), endedAt: null }]);
-  expect(t).toEqual({ workouts: 4, sets: 5, tonnes: 5, hours: 3.5, km: 5 });
+  expect(t).toEqual({ workouts: 4, sets: 5, kg: 5000, min: 210, km: 5 });
 });
 
 describe('desafios', () => {

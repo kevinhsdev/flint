@@ -41,7 +41,7 @@ test('backup rejeita ajustes com profile inválido', async () => {
   expect((await importBackup(file(json))).ok).toBe(false);
 });
 
-test('backup novo sai na versão 2', async () => {
+test('backup novo sai na versão 3', async () => {
   await wipeAll(); await loadDemo();
-  expect(JSON.parse(await (await exportBackup(false)).text()).version).toBe(2);
+  expect(JSON.parse(await (await exportBackup(false)).text()).version).toBe(3);
 });

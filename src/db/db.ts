@@ -1,5 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie';
-import type { Challenge, Exercise, Measure, Photo, Session, Template, WaterLog, WeightLog } from '../domain/types';
+import type { Challenge, Exercise, Food, Measure, Photo, Session, Template, WaterLog, WeightLog } from '../domain/types';
 
 export interface KV { key: string; value: unknown }
 
@@ -13,6 +13,7 @@ export const db = new Dexie('flint') as Dexie & {
   kv: EntityTable<KV, 'key'>;
   measures: EntityTable<Measure, 'id'>;
   challenges: EntityTable<Challenge, 'id'>;
+  foods: EntityTable<Food, 'id'>;
 };
 
 db.version(1).stores({
@@ -26,6 +27,8 @@ db.version(1).stores({
 });
 // v2 (fase 2): medidas corporais e desafios
 db.version(2).stores({ measures: 'id, day, part', challenges: 'id, startDay' });
+// v3 (fase 3): alimentos
+db.version(3).stores({ foods: 'id, day' });
 
 // iOS pode apagar dados de sites pouco usados; pedir armazenamento persistente.
 if (typeof navigator !== 'undefined') void navigator.storage?.persist?.();

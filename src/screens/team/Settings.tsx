@@ -124,7 +124,7 @@ export default function Settings() {
       </section>
 
       <Sheet open={!!pending} onClose={() => setPending(null)} title="Restaurar backup?">
-        <p className="muted">O backup substitui os dados deste aparelho: treinos, água e peso. Fotos só são trocadas se o backup tiver fotos.</p>
+        <p className="muted">O backup substitui os dados deste aparelho: treinos, dieta, água e peso. Fotos só são trocadas se o backup tiver fotos.</p>
         <div className="row-2">
           <button className="btn ghost" onClick={() => setPending(null)}>Cancelar</button>
           <button className="btn" onClick={async () => { const r = await importBackup(pending!); setPending(null); setMsg(r.ok ? 'Backup restaurado.' : r.error); if (r.ok) { const n = await getSettings(); setSoundEnabled(n.sound); applyTheme(n.theme); } }}>Substituir</button>

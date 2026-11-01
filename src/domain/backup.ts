@@ -2,10 +2,10 @@ import { db } from '../db/db';
 import { DEFAULT_SETTINGS, ensureLibrary } from '../db/repo';
 import { CARDIO, CHALLENGE_KINDS, MEASURE_PARTS } from './types';
 
-const VERSION = 3; // v2: pesquisa, som, metas de carga, aquecimento · v3: medidas, desafios, meta de peso
-const TABLES = ['exercises', 'templates', 'sessions', 'water', 'weights', 'kv', 'photos', 'measures', 'challenges'] as const;
+const VERSION = 4; // v2: pesquisa, som, metas de carga, aquecimento · v3: medidas, desafios, meta de peso · v4: dieta
+const TABLES = ['exercises', 'templates', 'sessions', 'water', 'weights', 'kv', 'photos', 'measures', 'challenges', 'foods'] as const;
 /** Tabelas que backups antigos não têm: ausentes viram lista vazia. */
-const OPTIONAL: readonly string[] = ['photos', 'measures', 'challenges'];
+const OPTIONAL: readonly string[] = ['photos', 'measures', 'challenges', 'foods'];
 type Table = (typeof TABLES)[number];
 
 async function toDataUrl(blob: Blob): Promise<string> {
@@ -44,6 +44,7 @@ const profileOk = (p: unknown) => p === null || (isObj(p) && oneOf(p.goal, ['mas
   && Array.isArray(p.days) && p.days.every(d => Number.isInteger(d) && d >= 0 && d <= 6) && oneOf(p.minutes, [30, 45, 60, 90]) && num(p.age));
 const entryOk = (e: unknown) => isObj(e) && str(e.exerciseId) && Array.isArray(e.sets) && e.sets.every(setOk) && (!('group' in e) || str(e.group));
 const cardioOk = (c: unknown) => isObj(c) && oneOf(c.type, CARDIO) && num(c.min) && numOrNull(c.km);
+const macrosOk = (m: unknown) => isObj(m) && [m.kcal, m.p, m.c, m.f].every(x => num(x) && (x as number) >= 0);
 /** Campos ausentes viram padrão em getSettings; presentes precisam ter o tipo certo. */
 const settingsOk = (v: unknown) => isObj(v)
   && (!('heightCm' in v) || numOrNull(v.heightCm)) && (!('waterGoalMl' in v) || numOrNull(v.waterGoalMl))
@@ -52,7 +53,9 @@ const settingsOk = (v: unknown) => isObj(v)
   && (!('notif' in v) || isObj(v.notif)) && (!('onboarded' in v) || typeof v.onboarded === 'boolean')
   && (!('profile' in v) || profileOk(v.profile)) && (!('sound' in v) || typeof v.sound === 'boolean')
   && (!('targets' in v) || (isObj(v.targets) && Object.values(v.targets).every(num)))
-  && (!('weightGoalKg' in v) || numOrNull(v.weightGoalKg));
+  && (!('weightGoalKg' in v) || numOrNull(v.weightGoalKg))
+  && (!('meals' in v) || (Array.isArray(v.meals) && v.meals.every(m => isObj(m) && str(m.id) && str(m.name))))
+  && (!('nutritionGoal' in v) || v.nutritionGoal === null || macrosOk(v.nutritionGoal));
 const ROW: Record<Table, (r: Record<string, unknown>) => boolean> = {
   exercises: r => str(r.id) && str(r.name) && str(r.primary),
   templates: r => str(r.id) && str(r.name) && Array.isArray(r.items),
@@ -63,6 +66,7 @@ const ROW: Record<Table, (r: Record<string, unknown>) => boolean> = {
   kv: r => str(r.key) && (r.key !== 'settings' || settingsOk(r.value)),
   photos: r => str(r.id) && str(r.day) && str(r.data) && (r.data as string).startsWith('data:'),
   measures: r => str(r.id) && str(r.day) && oneOf(r.part, MEASURE_PARTS) && num(r.cm) && (r.cm as number) > 0,
+  foods: r => str(r.id) && str(r.day) && num(r.at) && str(r.meal) && str(r.name) && str(r.qty) && macrosOk(r),
   challenges: r => str(r.id) && oneOf(r.kind, CHALLENGE_KINDS) && num(r.target) && (r.target as number) > 0 && str(r.startDay) && Number.isInteger(r.days) && (r.days as number) > 0,
 };
 

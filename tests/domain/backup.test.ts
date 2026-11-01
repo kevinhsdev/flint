@@ -24,7 +24,7 @@ test('sem fotos, o backup não leva fotos', async () => {
   await addPhoto(new Blob([new Uint8Array([9])]), '2026-10-01');
   const json = JSON.parse(await (await exportBackup(false)).text());
   expect(json.app).toBe('flint');
-  expect(json.version).toBe(3);
+  expect(json.version).toBe(4);
   expect(json.data.photos).toEqual([]);
 });
 
@@ -37,7 +37,7 @@ test('import inválido não apaga nada', async () => {
 });
 
 test('import de versão futura é recusado', async () => {
-  const r = await importBackup(new Blob([JSON.stringify({ app: 'flint', version: 4, data: {} })]));
+  const r = await importBackup(new Blob([JSON.stringify({ app: 'flint', version: 5, data: {} })]));
   expect(r.ok).toBe(false);
   expect(!r.ok && r.error).toMatch(/versão mais nova/);
 });

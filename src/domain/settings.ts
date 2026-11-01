@@ -14,4 +14,6 @@ export const DEFAULT_SETTINGS: Settings = {
   targets: {},
   theme: 'auto',
   weightGoalKg: null,
+  meals: [{ id: 'cafe', name: 'Café da manhã' }, { id: 'almoco', name: 'Almoço' }, { id: 'lanche', name: 'Lanche' }, { id: 'jantar', name: 'Jantar' }],
+  nutritionGoal: null,
 };

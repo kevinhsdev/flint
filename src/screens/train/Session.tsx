@@ -9,6 +9,7 @@ import { findPRs, isWork, suggestOverload, type PR } from '../../domain/strength
 import { deloadKg, warmupSets } from '../../domain/warmup';
 import type { Entry, Exercise, Session, SetLog, Template, TemplateItem } from '../../domain/types';
 import { photoFor } from '../../domain/photos';
+import { restAfter, rpe, supersetRound, toggleGroup } from '../../domain/training';
 import { FeatureCard } from '../../ui/FeatureCard';
 import type { StageId } from '../../domain/rules';
 import { Mascot } from '../../mascots/Mascot';
@@ -47,6 +48,7 @@ export default function SessionScreen() {
   const [menu, setMenu] = useState(false);
   const [pedra, setPedra] = useState<{ name: MascotAct; key: number }>();
   const [stuck, setStuck] = useState<number | null>(null);
+  const [ask, setAsk] = useState<{ ei: number; si: number } | null>(null); // RIR da série que acabou de sair
   const [summary, setSummary] = useState<{ session: Session; prs: PR[]; xp: number; stage: StageId } | null>(null);
   const once = useRef(false);
 
@@ -130,7 +132,7 @@ export default function SessionScreen() {
 
   function toggle(ei: number, si: number) {
     const e = s!.entries[ei], set = e.sets[si];
-    if (set.done) { update(x => { x.entries[ei].sets[si].done = false; }); return; }
+    if (set.done) { update(x => { x.entries[ei].sets[si].done = false; delete x.entries[ei].sets[si].rir; }); setAsk(null); return; }
     if (set.warmup) { update(x => { x.entries[ei].sets[si].done = true; }); play('check'); return; } // aquecimento: sem descanso nem recorde
     const wi = e.sets.slice(0, si).filter(x => !x.warmup).length;
     const item = itemOf(e.exerciseId), last = lastEntryFor(e.exerciseId, ctx!.history);
@@ -142,7 +144,9 @@ export default function SessionScreen() {
     save(next);
     const after = sessionPRs(next, ctx!.history).filter(p => p.exerciseId === e.exerciseId).length;
     if (after > before) { setPedra({ name: 'flex', key: Date.now() }); play('pr'); } else play('check');
-    if (item.restSec > 0 && !editing) setRest({ endsAt: Date.now() + item.restSec * 1000, total: item.restSec });
+    setAsk({ ei, si });
+    const sec = restAfter(next.entries, ei, item.restSec); // no superset, só depois do último da rodada
+    if (sec > 0 && !editing) setRest({ endsAt: Date.now() + sec * 1000, total: sec });
   }
 
   async function finish() {
@@ -160,7 +164,7 @@ export default function SessionScreen() {
   const addExercises = (ids: string[]) => {
     const swap = picker?.swap;
     update(x => {
-      if (swap !== undefined) x.entries[swap] = { exerciseId: ids[0], sets: x.entries[swap].sets.filter(y => !y.warmup).map(() => ({ kg: 0, reps: 0, done: false })) };
+      if (swap !== undefined) x.entries[swap] = { ...x.entries[swap], exerciseId: ids[0], sets: x.entries[swap].sets.filter(y => !y.warmup).map(() => ({ kg: 0, reps: 0, done: false })) };
       else for (const id of ids) x.entries.push({ exerciseId: id, sets: Array.from({ length: FREE_ITEM.sets }, () => ({ kg: 0, reps: 0, done: false })) });
     });
     setPicker(null);
@@ -182,9 +186,11 @@ export default function SessionScreen() {
         const ex = ctx.lib.get(e.exerciseId), item = itemOf(e.exerciseId), last = lastEntryFor(e.exerciseId, ctx.history);
         const tip = ex && suggestOverload(item, last, ex.equipment);
         const lastWork = last?.sets.filter(x => !x.warmup);
+        const ss = supersetRound(s.entries, ei);
         let wn = 0, an = 0; // numeração separada: aquecimento "Aq", trabalho 1, 2, 3…
         return (
-          <section key={ei} className={`ex-card${ei === cur && !editing ? ' now' : ''}`}>
+          <section key={ei} className={`ex-card${ei === cur && !editing ? ' now' : ''}${ss ? ' ss' : ''}${ss?.first === ei ? ' ss-first' : ''}${ss?.last === ei ? ' ss-last' : ''}`}>
+            {ss?.first === ei && <div className="ss-label"><Icon name="link" /> Superset · rodada {ss.round} de {ss.of}</div>}
             <div className="ex-head">
               <b>{ex?.name ?? 'Exercício'}</b>
               {plateau(e.exerciseId, ctx.history, now) && <button className="badge-stuck" onClick={() => setStuck(ei)}>Platô</button>}
@@ -200,14 +206,25 @@ export default function SessionScreen() {
                 const what = x.warmup ? `aquecimento ${n}` : `série ${n}`, of = x.warmup ? `do ${what}` : `da ${what}`;
                 const prev = x.warmup ? undefined : lastWork?.[n - 1];
                 return (
-                  <div key={si} role="row" className={`set-row${x.warmup ? ' warm' : ''}${x.done ? ' done' : ''}${isPR(e.exerciseId, x) ? ' pr' : ''}`}>
-                    <span className="num">{x.warmup ? 'Aq' : n}</span>
+                  <div key={si} className="set-wrap">
+                  <div role="row" className={`set-row${x.warmup ? ' warm' : ''}${x.done ? ' done' : ''}${isPR(e.exerciseId, x) ? ' pr' : ''}`}>
+                    <span className="num">{x.warmup ? 'Aq' : n}{x.rir !== undefined && <small className="rpe">RPE {rpe(x.rir)}</small>}</span>
                     <span className="num muted">{prev ? `${fmtNum(prev.kg)}×${prev.reps}` : '—'}</span>
                     <NumberField decimal aria-label={`Carga ${of}`} value={x.kg || null} placeholder={prev ? fmtNum(prev.kg) : '0'}
                       onValue={v => update(y => { y.entries[ei].sets[si].kg = v ?? 0; })} />
                     <NumberField aria-label={`Reps ${of}`} value={x.reps || null} placeholder={String(x.warmup ? x.reps : prev?.reps || item.repMin)}
                       onValue={v => update(y => { y.entries[ei].sets[si].reps = Math.round(v ?? 0); })} />
                     <button className="check" aria-pressed={x.done} aria-label={`Concluir ${what}`} onClick={() => toggle(ei, si)}><Icon name="check" /></button>
+                  </div>
+                  {ask?.ei === ei && ask.si === si && !x.warmup && (
+                    <div className="rir-ask" role="group" aria-label={`Quantas reps sobraram na ${what}?`}>
+                      <span>Sobraram</span>
+                      {[0, 1, 2, 3, 4, 5].map(r => (
+                        <button key={r} aria-label={String(r)} onClick={() => { update(y => { y.entries[ei].sets[si].rir = r; }); setAsk(null); }}>{r === 5 ? '5+' : r}</button>
+                      ))}
+                      <button className="icon-btn" aria-label="Fechar pergunta" onClick={() => setAsk(null)}><Icon name="close" /></button>
+                    </div>
+                  )}
                   </div>
                 );
               })}
@@ -239,6 +256,14 @@ export default function SessionScreen() {
         <div className="menu">
           <button className="menu-item" onClick={() => { setPicker({ swap: exMenu! }); setExMenu(null); }}><Icon name="undo" /> Trocar exercício</button>
           {exMenu !== null && !editing && canWarm(exMenu) && <button className="menu-item" onClick={() => { warmUp(exMenu); setExMenu(null); }}><Icon name="plus" /> Aquecer</button>}
+          {exMenu !== null && (() => {
+            const g = s.entries[exMenu]?.group, next = g && s.entries[exMenu + 1]?.group === g, prev = g && s.entries[exMenu - 1]?.group === g;
+            const link = (i: number) => { setExMenu(null); update(x => { x.entries = toggleGroup(x.entries, i, () => crypto.randomUUID()); }); };
+            return <>
+              {!next && exMenu < s.entries.length - 1 && <button className="menu-item" onClick={() => link(exMenu)}><Icon name="link" /> Superset com o próximo</button>}
+              {(next || prev) && <button className="menu-item" onClick={() => link(next ? exMenu : exMenu - 1)}><Icon name="link" /> Desfazer superset</button>}
+            </>;
+          })()}
           <button className="menu-item danger" onClick={() => { const i = exMenu!; setExMenu(null); update(x => { x.entries.splice(i, 1); }); }}><Icon name="trash" /> Remover</button>
         </div>
       </Sheet>

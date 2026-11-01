@@ -5,6 +5,7 @@ import { db } from '../../db/db';
 import { deleteSession } from '../../db/repo';
 import { sessionStats } from '../../domain/progress';
 import { findPRs } from '../../domain/strength';
+import { pace } from '../../domain/training';
 import type { Session } from '../../domain/types';
 import { Empty } from '../../ui/Empty';
 import { Icon } from '../../ui/Icon';
@@ -46,6 +47,22 @@ export default function History() {
           <ul className="hist">
             {list.map(s => {
               const st = sessionStats(s, data.lib), prs = prCount.get(s.id) ?? 0;
+              const trash = <button className="icon-btn" aria-label={`Excluir ${s.name} de ${day(s.startedAt)}`} onClick={() => setDel(s)}><Icon name="trash" /></button>;
+              // registro rápido: não tem séries pra editar
+              if (s.kind) return (
+                <li key={s.id}>
+                  <div className={`hist-item quick-${s.kind}`}>
+                    <div className="hist-top"><b>{s.name}</b><span className="muted">{day(s.startedAt)}</span></div>
+                    <div className="hist-meta num">
+                      {s.kind === 'checkin' && <span className="kind">Check-in</span>}
+                      <span>{st.durationMin} min</span>
+                      {s.cardio?.km ? <span>{fmtNum(s.cardio.km)} km</span> : null}
+                      {s.cardio && pace(s.cardio) && <span>{pace(s.cardio)}</span>}
+                    </div>
+                  </div>
+                  {trash}
+                </li>
+              );
               return (
                 <li key={s.id}>
                   <Link to={`/treino/sessao?edit=${s.id}`} className="hist-item" aria-label={`Abrir ${s.name} de ${day(s.startedAt)}`}>
@@ -56,7 +73,7 @@ export default function History() {
                     </div>
                     <small className="hist-ex">{s.entries.filter(e => e.sets.some(x => x.done)).map(e => name(e.exerciseId)).join(' · ')}</small>
                   </Link>
-                  <button className="icon-btn" aria-label={`Excluir ${s.name} de ${day(s.startedAt)}`} onClick={() => setDel(s)}><Icon name="trash" /></button>
+                  {trash}
                 </li>
               );
             })}

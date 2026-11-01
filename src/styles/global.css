@@ -600,6 +600,30 @@ html { scroll-padding-bottom: calc(180px + var(--safe-bottom)); scroll-padding-t
 .set-row.warm > span:first-child { font-size: 11px; letter-spacing: .04em; color: #ff9f0a; }
 .set-row.warm input { opacity: .75; font-weight: 600; }
 .set-row.warm.done { background: color-mix(in srgb, #ff9f0a 10%, transparent); }
+
+/* fase 1: superset, RIR, cardio e check-in */
+.ex-card.ss { border-left: 4px solid var(--crimson); }
+.ex-card.ss-first:not(.ss-last) { border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; margin-bottom: -8px; }
+.ex-card.ss-last:not(.ss-first) { border-top-left-radius: 8px; border-top-right-radius: 8px; }
+.ex-card.ss:not(.ss-first):not(.ss-last) { border-radius: 8px; margin-bottom: -8px; }
+.ss-label { display: inline-flex; align-items: center; gap: 6px; margin: 8px 0 2px; padding: 4px 10px; border-radius: 99px; background: var(--crimson); color: #fff; font-size: 12px; font-weight: 800; }
+.ss-label .icon { width: 14px; height: 14px; }
+.set-row > span:first-child { display: grid; justify-items: center; line-height: 1.1; }
+.rpe { font-size: 9px; font-weight: 800; color: var(--crimson); letter-spacing: 0; white-space: nowrap; }
+.rir-ask { display: flex; align-items: center; gap: 4px; margin: 2px 0 4px; padding: 4px 4px 4px 12px; border-radius: 14px; background: var(--surface-2); animation: sheet-up 220ms var(--ease-out); }
+.rir-ask > span { flex: 1; font-size: 12px; font-weight: 700; color: var(--muted); }
+.rir-ask > button:not(.icon-btn) { width: 34px; height: 34px; border-radius: 10px; background: var(--surface); font-weight: 800; font-variant-numeric: tabular-nums; transition: transform 120ms var(--ease-out); }
+.rir-ask > button:not(.icon-btn):active { transform: scale(.9); background: var(--crimson); color: #fff; }
+.rir-ask .icon-btn { width: 34px; height: 34px; color: var(--muted); }
+.item.ss-next { border-bottom: 3px solid var(--crimson); }
+.ss-link { color: var(--faint) !important; }
+.ss-link.on { color: var(--crimson) !important; }
+.quick .btn { gap: 6px; }
+.quick-msg { margin: 0; text-align: center; font-size: 14px; font-weight: 700; color: var(--crimson); }
+.pace { display: flex; justify-content: space-between; align-items: baseline; margin: 0 0 4px; padding: 12px 14px; border-radius: 14px; background: var(--surface-2); }
+.pace small { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.pace b { font-size: 24px; font-weight: 900; }
+.hist-meta .kind { color: var(--crimson); font-weight: 800; }
 .warm-btn { align-self: flex-start; height: 32px; padding: 0 14px; margin: 0 0 8px; border-radius: 99px; background: #ff9f0a; color: #fff; font-size: 13px; font-weight: 800; }
 .warm-btn:active { transform: scale(.96); }
 .badge-stuck { display: inline-flex; align-items: center; height: 22px; padding: 0 8px; margin: 0 8px; border-radius: 99px; background: var(--yellow); color: var(--ink-on-yellow); font-size: 11px; font-weight: 800; font-style: normal; letter-spacing: .02em; vertical-align: 2px; }

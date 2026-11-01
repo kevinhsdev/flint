@@ -2,10 +2,11 @@ import { useEffect, useState, type CSSProperties } from 'react';
 import { NavLink, useLocation } from 'react-router';
 import { Icon, type IconName } from './Icon';
 
-const TABS: [string, string, IconName][] = [
+/** [rota, rótulo, ícone, outras rotas que acendem a aba] */
+const TABS: [string, string, IconName, string?][] = [
   ['/', 'Hoje', 'home'],
   ['/treino', 'Treino', 'dumb'],
-  ['/agua', 'Água', 'drop'],
+  ['/dieta', 'Dieta', 'fork', '/agua'],
   ['/progresso', 'Progresso', 'chart'],
   ['/time', 'Time', 'spark'],
 ];
@@ -33,7 +34,7 @@ export function TabBar() {
   }, [pathname]);
 
   if (HIDDEN.some(p => pathname.startsWith(p))) return null;
-  const active = TABS.findIndex(([to]) => (to === '/' ? pathname === '/' : pathname.startsWith(to)));
+  const active = TABS.findIndex(([to, , , also]) => (to === '/' ? pathname === '/' : pathname.startsWith(to) || (!!also && pathname.startsWith(also))));
   return (
     <nav aria-label="Principal" className={`tabbar${away ? ' away' : ''}`} style={{ '--i': Math.max(0, active) } as CSSProperties}>
       {active >= 0 && <span className="tab-pill" aria-hidden="true" />}

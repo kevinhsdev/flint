@@ -5,25 +5,26 @@ import { MemoryRouter } from 'react-router';
 import { TabBar } from '../../src/ui/TabBar';
 import { SILHOUETTE } from '../../src/screens/progress/anatomy';
 
-beforeEach(() => startFresh());
-
-test('barra tem 5 abas e marca a ativa', async () => {
-  renderAt('/agua');
-  const nav = await screen.findByRole('navigation', { name: 'Principal' });
-  expect([...nav.querySelectorAll('a')].map(a => a.textContent)).toEqual(['Hoje', 'Treino', 'Água', 'Progresso', 'Time']);
-  expect(screen.getByRole('link', { name: 'Água' })).toHaveAttribute('aria-current', 'page');
-});
-
-test('barra continua na sessão de treino (é a saída para outras abas)', async () => {
-  renderAt('/treino/sessao?start=livre');
-  // espera a sessão terminar de carregar: senão o carregamento assíncrono roda depois do fim do teste (no CI, mais lento)
-  expect(await screen.findByRole('heading', { name: 'Treino livre' })).toBeInTheDocument();
-  expect(screen.getByRole('navigation', { name: 'Principal' })).toBeInTheDocument();
-});
+beforeEach(() => startFresh());
+
+test('barra tem 5 abas e marca a ativa', async () => {
+  renderAt('/dieta');
+  const nav = await screen.findByRole('navigation', { name: 'Principal' });
+  expect([...nav.querySelectorAll('a')].map(a => a.textContent)).toEqual(['Hoje', 'Treino', 'Dieta', 'Progresso', 'Time']);
+  expect(screen.getByRole('link', { name: 'Dieta' })).toHaveAttribute('aria-current', 'page');
+});
+
+test('barra continua na sessão de treino (é a saída para outras abas)', async () => {
+  renderAt('/treino/sessao?start=livre');
+  // espera a sessão terminar de carregar: senão o carregamento assíncrono roda depois do fim do teste (no CI, mais lento)
+  expect(await screen.findByRole('heading', { name: 'Treino livre' })).toBeInTheDocument();
+  expect(screen.getByRole('navigation', { name: 'Principal' })).toBeInTheDocument();
+});
 
 const bar = (path = '/agua') => render(<MemoryRouter initialEntries={[path]}><TabBar /></MemoryRouter>).container.querySelector('nav')!;
 
-test('destaque desliza até a aba ativa', () => {
+test('destaque desliza até a aba ativa; a tela de água fica dentro da Dieta', () => {
+  expect(bar('/dieta').style.getPropertyValue('--i')).toBe('2');
   const nav = bar('/agua');
   expect(nav.querySelector('.tab-pill')).not.toBeNull();
   expect(nav.style.getPropertyValue('--i')).toBe('2');

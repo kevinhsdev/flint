@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
 import { deleteWater, getSettings, logWater, saveSettings, undoLastWater } from '../../db/repo';
@@ -47,7 +48,8 @@ export default function Water() {
 
   return (
     <main className="screen water-screen">
-      <header className="rise">
+      <header className="rise water-head">
+        <Link to="/dieta" className="icon-btn" aria-label="Voltar para Dieta"><Icon name="back" /></Link>
         <div className="eyebrow">{new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
         <h1 className="title">Água</h1>
       </header>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { logFood, saveSettings, uid } from '../../db/repo';
+import { addSavedMeal, deleteSavedMeal, logFood, saveMeal, saveSettings, uid } from '../../db/repo';
 import { frequentFoods, kcalFrom, suggestGoal } from '../../domain/nutrition';
-import type { Food, Macros, Meal, Settings } from '../../domain/types';
+import type { Food, Macros, Meal, SavedMeal, Settings } from '../../domain/types';
 import { Icon } from '../../ui/Icon';
 import { fmtNum, NumberField } from '../../ui/NumberField';
 import { Sheet } from '../../ui/Sheet';
@@ -11,7 +11,7 @@ const EMPTY: Draft = { name: '', qty: '', kcal: null, p: null, c: null, f: null 
 const GRAMS = [['p', 'Proteína (g)'], ['c', 'Carboidrato (g)'], ['f', 'Gordura (g)']] as const;
 
 /** Anotar um alimento: nome, porção e macros; kcal em branco sai dos macros. Frequentes preenchem tudo num toque. */
-export function FoodSheet({ meal, day, foods, onClose }: { meal: Meal | null; day: string; foods: Food[]; onClose(): void }) {
+export function FoodSheet({ meal, day, foods, saved, onClose }: { meal: Meal | null; day: string; foods: Food[]; saved: SavedMeal[]; onClose(): void }) {
   const [x, setX] = useState<Draft>(EMPTY);
   useEffect(() => { if (meal) setX(EMPTY); }, [meal]);
   const kcal = x.kcal ?? kcalFrom(x.p ?? 0, x.c ?? 0, x.f ?? 0);
@@ -20,6 +20,18 @@ export function FoodSheet({ meal, day, foods, onClose }: { meal: Meal | null; da
 
   return (
     <Sheet open={!!meal} onClose={onClose} title={meal ? `Adicionar em ${meal.name}` : ''}>
+      {saved.length > 0 && (
+        <ul className="saved-meals" role="group" aria-label="Refeições salvas">
+          {saved.map(s => (
+            <li key={s.id}>
+              <button onClick={async () => { await addSavedMeal(s, day, meal!.id); onClose(); }}>
+                <b>{s.name}</b><small className="num">{s.foods.length} {s.foods.length === 1 ? 'item' : 'itens'} · {fmtNum(s.foods.reduce((n, f) => n + f.kcal, 0))} kcal</small>
+              </button>
+              <button className="icon-btn" aria-label={`Apagar refeição salva ${s.name}`} onClick={() => deleteSavedMeal(s.id)}><Icon name="trash" /></button>
+            </li>
+          ))}
+        </ul>
+      )}
       {quick.length > 0 && (
         <div className="quick-foods" role="group" aria-label="Frequentes">
           {quick.map(f => (
@@ -98,6 +110,19 @@ export function MealsSheet({ open, onClose, meals, onSave }: { open: boolean; on
       </ul>
       <button className="btn ghost wide" onClick={() => setList(l => [...l, { id: uid(), name: '' }])}><Icon name="plus" /> Nova refeição</button>
       <button className="btn wide" disabled={!valid.length} onClick={async () => { await onSave(valid.map(m => ({ ...m, name: m.name.trim() }))); onClose(); }}>Salvar refeições</button>
+    </Sheet>
+  );
+}
+
+/** Guardar a refeição do dia como pronta, pra adicionar tudo de uma vez outro dia. */
+export function SaveMealSheet({ meal, foods, onClose }: { meal: Meal | null; foods: Food[]; onClose(): void }) {
+  const [name, setName] = useState('');
+  useEffect(() => { if (meal) setName(meal.name); }, [meal]);
+  return (
+    <Sheet open={!!meal} onClose={onClose} title="Salvar refeição pronta">
+      <p className="muted">{foods.map(f => f.name).join(', ')}</p>
+      <label className="field"><span>Nome</span><input value={name} onChange={e => setName(e.target.value)} placeholder="Ex.: marmita, pré-treino" autoComplete="off" /></label>
+      <button className="btn wide" disabled={!name.trim()} onClick={async () => { await saveMeal(name.trim(), foods); onClose(); }}>Salvar</button>
     </Sheet>
   );
 }

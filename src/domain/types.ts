@@ -47,6 +47,8 @@ export interface Macros { kcal: number; p: number; c: number; f: number }
 /** Alimento anotado à mão numa refeição; qty é texto livre ("150 g", "2 un"). */
 export interface Food extends Macros { id: string; day: string; at: number; meal: string; name: string; qty: string }
 export interface Meal { id: string; name: string }
+/** Refeição pronta ("marmita"): vários alimentos adicionados de uma vez. */
+export interface SavedMeal { id: string; name: string; foods: Pick<Food, 'name' | 'qty' | 'kcal' | 'p' | 'c' | 'f'>[] }
 export type ThemePref = 'auto' | 'light' | 'dark';
 
 export interface Settings {

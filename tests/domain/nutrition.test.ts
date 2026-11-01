@@ -82,3 +82,15 @@ describe('banco', () => {
     expect((await importBackup(new Blob([JSON.stringify(json)]))).ok).toBe(false);
   });
 });
+
+test('evolução semanal: média de kcal e proteína nos dias anotados', async () => {
+  const { weeklyNutrition } = await import('../../src/domain/nutrition');
+  // 2026-10-26 é segunda
+  const foods = [food({ day: '2026-10-27', kcal: 2000, p: 150 }), food({ day: '2026-10-28', kcal: 1000, p: 50 }), food({ day: '2026-10-20', kcal: 1500, p: 100 })];
+  const w = weeklyNutrition(foods, '2026-10-29', 3);
+  expect(w).toEqual([
+    { week: '2026-10-12', kcal: 0, p: 0, days: 0 },
+    { week: '2026-10-19', kcal: 1500, p: 100, days: 1 },
+    { week: '2026-10-26', kcal: 1500, p: 100, days: 2 },
+  ]);
+});

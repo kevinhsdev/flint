@@ -6,6 +6,7 @@ import { getActiveSession, getSettings, logWater, logWeight, undoLastWater } fro
 import { addDays, daysBetween, localDay, weekday } from '../../domain/dates';
 import { waterGoalMl } from '../../domain/body';
 import { MUSCLE_NAMES } from '../../domain/exercises';
+import { totals } from '../../domain/nutrition';
 import { computeXP, dailyMedals, goalWeeksStreak, mood, type MedalId } from '../../domain/gamification';
 import { nextTemplate } from '../../domain/routine';
 import { findPRs } from '../../domain/strength';
@@ -60,8 +61,8 @@ export default function Today() {
       db.sessions.toArray(), db.templates.orderBy('order').toArray(), db.water.toArray(), db.weights.toArray(),
       db.exercises.toArray(), getSettings(), getActiveSession(),
     ]);
-    return { sessions, templates, water, weights, library, settings, active };
-  }, []);
+    return { sessions, templates, water, weights, library, settings, active, foods: await db.foods.where('day').equals(localDay(new Date())).toArray() };
+  }, [today]);
   if (!d) return <main className="screen" />;
 
   const now = new Date();
@@ -83,6 +84,7 @@ export default function Today() {
   const delta = lastW && refW && refW !== lastW ? lastW.kg - refW.kg : null;
   const recent = weights.slice(-7), lo = Math.min(...recent.map(w => w.kg)), hi = Math.max(...recent.map(w => w.kg));
   const lastPR = findPRs(d.sessions).at(-1);
+  const eaten = totals(d.foods), kcalGoal = d.settings.nutritionGoal?.kcal;
   const medals = dailyMedals(today, game);
   const streak = goalWeeksStreak(d.sessions, d.settings.trainDays, now);
   // na primeira semana do mês, a retrospectiva do mês anterior
@@ -140,6 +142,15 @@ export default function Today() {
             : <div className="s">toque para registrar</div>}
         </button>
       </div>
+
+      <Link to="/dieta" className="tile yellow diet-tile rise" style={{ '--i': 3 } as CSSProperties}
+        aria-label={`Dieta: ${fmtNum(eaten.kcal)}${kcalGoal ? ` de ${fmtNum(kcalGoal)}` : ''} kcal hoje`}>
+        <div className="k">Dieta</div>
+        <div className="v num">{fmtNum(eaten.kcal)}<small>{kcalGoal ? ` / ${fmtNum(kcalGoal)}` : ''} kcal</small></div>
+        {kcalGoal ? <div className="dt" aria-hidden="true"><i style={{ width: `${Math.min(100, (eaten.kcal / kcalGoal) * 100)}%` }} /></div> : null}
+        <div className="s num">{d.foods.length ? `P ${fmtNum(eaten.p)} · C ${fmtNum(eaten.c)} · G ${fmtNum(eaten.f)}` : 'toque para anotar uma refeição'}</div>
+        <Icon name="chev" className="icon chev" />
+      </Link>
 
       {lastPR && (
         <Link to={`/progresso/exercicio/${lastPR.exerciseId}`} className="tile black pr rise" style={{ '--i': 3 } as CSSProperties}>

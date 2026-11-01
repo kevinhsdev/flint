@@ -6,7 +6,7 @@ import { makeSeed } from '../domain/seed';
 import { lastEntryFor } from '../domain/routine';
 import { suggestOverload } from '../domain/strength';
 import { generatePlan } from '../domain/plan';
-import type { Challenge, Entry, Exercise, Food, MeasurePart, Profile, Session, Settings, Template } from '../domain/types';
+import type { Challenge, Entry, Exercise, Food, MeasurePart, SavedMeal, Profile, Session, Settings, Template } from '../domain/types';
 
 export const uid = () => crypto.randomUUID();
 
@@ -91,6 +91,14 @@ export async function copyMeal(from: string, to: string, meal: string) {
   const src = await db.foods.where('day').equals(from).filter(f => f.meal === meal).sortBy('at');
   const at = Date.now();
   await db.foods.bulkAdd(src.map((f, i) => ({ ...f, id: uid(), day: to, at: at + i })));
+}
+
+export const saveMeal = (name: string, foods: Food[]) =>
+  db.savedMeals.add({ id: uid(), name, foods: foods.map(({ name, qty, kcal, p, c, f }) => ({ name, qty, kcal, p, c, f })) });
+export const deleteSavedMeal = (id: string) => db.savedMeals.delete(id);
+export async function addSavedMeal(s: SavedMeal, day: string, meal: string) {
+  const at = Date.now();
+  await db.foods.bulkAdd(s.foods.map((f, i) => ({ ...f, id: uid(), day, meal, at: at + i })));
 }
 
 export const addPhoto = (blob: Blob, day: string) => db.photos.add({ id: uid(), day, blob });

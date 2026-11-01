@@ -760,3 +760,11 @@ html { scroll-padding-bottom: calc(180px + var(--safe-bottom)); scroll-padding-t
 .diet-weeks i { display: block; min-height: 3px; border-radius: 5px 5px 2px 2px; background: var(--surface-2); }
 .diet-weeks i.on { background: var(--yellow); }
 .diet-avg { margin: 6px 0 0; color: var(--muted); font-weight: 600; } .diet-avg b { color: var(--text); font-weight: 800; }
+.scan-btn { margin: 0 0 14px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.scanner { margin-bottom: 8px; }
+.scan-view { position: relative; aspect-ratio: 4 / 3; border-radius: 16px; overflow: hidden; background: #000; margin-bottom: 12px; }
+.scan-view video { width: 100%; height: 100%; object-fit: cover; }
+.scan-view i { position: absolute; inset: 30% 12%; border: 2px solid rgba(255,255,255,.85); border-radius: 12px; box-shadow: 0 0 0 999px rgba(0,0,0,.35); }
+.scan-code { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: end; }
+.scan-code .btn { height: 48px; margin-bottom: 14px; }
+.scan-msg { margin: 0 0 8px; font-weight: 700; color: var(--crimson); font-size: 14px; }

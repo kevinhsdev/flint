@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { addSavedMeal, deleteSavedMeal, logFood, saveMeal, saveSettings, uid } from '../../db/repo';
+import { scaleMacros, type Product } from '../../domain/foodfacts';
 import { frequentFoods, kcalFrom, suggestGoal } from '../../domain/nutrition';
 import type { Food, Macros, Meal, SavedMeal, Settings } from '../../domain/types';
 import { Icon } from '../../ui/Icon';
 import { fmtNum, NumberField } from '../../ui/NumberField';
 import { Sheet } from '../../ui/Sheet';
+import { Scanner } from './Scanner';
 
 type Draft = { name: string; qty: string; kcal: number | null; p: number | null; c: number | null; f: number | null };
 const EMPTY: Draft = { name: '', qty: '', kcal: null, p: null, c: null, f: null };
@@ -13,7 +15,16 @@ const GRAMS = [['p', 'Proteína (g)'], ['c', 'Carboidrato (g)'], ['f', 'Gordura 
 /** Anotar um alimento: nome, porção e macros; kcal em branco sai dos macros. Frequentes preenchem tudo num toque. */
 export function FoodSheet({ meal, day, foods, saved, onClose }: { meal: Meal | null; day: string; foods: Food[]; saved: SavedMeal[]; onClose(): void }) {
   const [x, setX] = useState<Draft>(EMPTY);
-  useEffect(() => { if (meal) setX(EMPTY); }, [meal]);
+  const [scan, setScan] = useState(false);
+  // produto lido: macros por 100 g, pra recalcular quando muda a quantidade
+  const [per100, setPer100] = useState<{ m: Macros; g: number | null } | null>(null);
+  useEffect(() => { if (meal) { setX(EMPTY); setScan(false); setPer100(null); } }, [meal]);
+  const fromProduct = (m: Macros, g: number) => setX(prev => ({ ...prev, qty: `${fmtNum(g)} g`, ...scaleMacros(m, g) }));
+  const onProduct = (p: Product) => {
+    const g = p.servingG ?? 100;
+    setPer100({ m: p.per100, g }); setScan(false);
+    setX({ ...EMPTY, name: p.name, qty: `${fmtNum(g)} g`, ...scaleMacros(p.per100, g) });
+  };
   const kcal = x.kcal ?? kcalFrom(x.p ?? 0, x.c ?? 0, x.f ?? 0);
   const ok = x.name.trim() && kcal > 0;
   const quick = frequentFoods(foods);
@@ -40,6 +51,14 @@ export function FoodSheet({ meal, day, foods, saved, onClose }: { meal: Meal | n
             </button>
           ))}
         </div>
+      )}
+      {scan ? <Scanner onProduct={onProduct} /> : (
+        <button className="btn ghost wide scan-btn" onClick={() => setScan(true)}><Icon name="camera" /> Código de barras</button>
+      )}
+      {per100 && (
+        <label className="field"><span>Gramas</span>
+          <NumberField decimal value={per100.g} onValue={g => { setPer100({ ...per100, g }); if (g) fromProduct(per100.m, g); }} />
+        </label>
       )}
       <label className="field"><span>Alimento</span><input value={x.name} onChange={e => setX({ ...x, name: e.target.value })} placeholder="Ex.: arroz, frango, whey" autoComplete="off" enterKeyHint="next" autoFocus /></label>
       <label className="field"><span>Quantidade</span><input value={x.qty} onChange={e => setX({ ...x, qty: e.target.value })} placeholder="Ex.: 150 g, 2 un" autoComplete="off" /></label>

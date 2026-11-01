@@ -1,5 +1,6 @@
 import { db } from '../db/db';
 import { DEFAULT_SETTINGS, ensureLibrary } from '../db/repo';
+import { CARDIO } from './types';
 
 const VERSION = 2; // v2: pesquisa (profile/onboarded), som, metas de carga, séries de aquecimento
 const TABLES = ['exercises', 'templates', 'sessions', 'water', 'weights', 'kv', 'photos'] as const;
@@ -33,12 +34,14 @@ const isObj = (x: unknown): x is Record<string, unknown> => typeof x === 'object
 const str = (x: unknown) => typeof x === 'string';
 const num = (x: unknown) => typeof x === 'number' && Number.isFinite(x);
 const numOrNull = (x: unknown) => x === null || num(x);
-const setOk = (s: unknown) => isObj(s) && num(s.kg) && num(s.reps) && typeof s.done === 'boolean' && (!('warmup' in s) || typeof s.warmup === 'boolean');
+const setOk = (s: unknown) => isObj(s) && num(s.kg) && num(s.reps) && typeof s.done === 'boolean' && (!('warmup' in s) || typeof s.warmup === 'boolean')
+  && (!('rir' in s) || (Number.isInteger(s.rir) && (s.rir as number) >= 0 && (s.rir as number) <= 5));
 const oneOf = (x: unknown, xs: readonly unknown[]) => xs.includes(x);
 const profileOk = (p: unknown) => p === null || (isObj(p) && oneOf(p.goal, ['massa', 'emagrecer', 'condicionamento', 'forca'])
   && oneOf(p.level, ['iniciante', 'intermediario', 'avancado']) && oneOf(p.place, ['completa', 'basica', 'casa'])
   && Array.isArray(p.days) && p.days.every(d => Number.isInteger(d) && d >= 0 && d <= 6) && oneOf(p.minutes, [30, 45, 60, 90]) && num(p.age));
-const entryOk = (e: unknown) => isObj(e) && str(e.exerciseId) && Array.isArray(e.sets) && e.sets.every(setOk);
+const entryOk = (e: unknown) => isObj(e) && str(e.exerciseId) && Array.isArray(e.sets) && e.sets.every(setOk) && (!('group' in e) || str(e.group));
+const cardioOk = (c: unknown) => isObj(c) && oneOf(c.type, CARDIO) && num(c.min) && numOrNull(c.km);
 /** Campos ausentes viram padrão em getSettings; presentes precisam ter o tipo certo. */
 const settingsOk = (v: unknown) => isObj(v)
   && (!('heightCm' in v) || numOrNull(v.heightCm)) && (!('waterGoalMl' in v) || numOrNull(v.waterGoalMl))
@@ -50,7 +53,8 @@ const settingsOk = (v: unknown) => isObj(v)
 const ROW: Record<Table, (r: Record<string, unknown>) => boolean> = {
   exercises: r => str(r.id) && str(r.name) && str(r.primary),
   templates: r => str(r.id) && str(r.name) && Array.isArray(r.items),
-  sessions: r => str(r.id) && num(r.startedAt) && Array.isArray(r.entries) && r.entries.every(entryOk) && numOrNull(r.endedAt),
+  sessions: r => str(r.id) && num(r.startedAt) && Array.isArray(r.entries) && r.entries.every(entryOk) && numOrNull(r.endedAt)
+    && (!('kind' in r) || oneOf(r.kind, ['checkin', 'cardio'])) && (r.kind !== 'cardio' || cardioOk(r.cardio)),
   water: r => str(r.id) && str(r.day) && num(r.ml),
   weights: r => str(r.id) && str(r.day) && num(r.kg),
   kv: r => str(r.key) && (r.key !== 'settings' || settingsOk(r.value)),

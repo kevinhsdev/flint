@@ -11,19 +11,26 @@ export interface Exercise {
   id: string; name: string; primary: Muscle; secondary: Muscle[];
   equipment: Equipment; custom: boolean; archived: boolean;
 }
-export interface TemplateItem { exerciseId: string; sets: number; repMin: number; repMax: number; restSec: number }
+/** `group`: itens seguidos com o mesmo grupo formam um superset. */
+export interface TemplateItem { exerciseId: string; sets: number; repMin: number; repMax: number; restSec: number; group?: string }
 export interface Template { id: string; name: string; order: number; items: TemplateItem[]; archived: boolean }
-export interface SetLog { kg: number; reps: number; done: boolean; warmup?: boolean }
+/** `rir`: reps que sobraram (0–5, 5 = 5+); RPE = 10 − RIR. */
+export interface SetLog { kg: number; reps: number; done: boolean; warmup?: boolean; rir?: number }
 
 export type Goal = 'massa' | 'emagrecer' | 'condicionamento' | 'forca';
 export type Level = 'iniciante' | 'intermediario' | 'avancado';
 export type Place = 'completa' | 'basica' | 'casa';
 /** Respostas da pesquisa inicial que alimentam o plano gerado. */
 export interface Profile { goal: Goal; level: Level; days: number[]; minutes: 30 | 45 | 60 | 90; place: Place; age: number }
-export interface Entry { exerciseId: string; sets: SetLog[] }
+export interface Entry { exerciseId: string; sets: SetLog[]; group?: string }
+export const CARDIO = ['corrida', 'caminhada', 'bike', 'outro'] as const;
+export type CardioType = (typeof CARDIO)[number];
+export interface Cardio { type: CardioType; min: number; km: number | null }
+/** Sem `kind`: treino de musculação. `checkin` e `cardio` são registros rápidos, já terminados e sem séries. */
 export interface Session {
   id: string; templateId: string | null; name: string;
   startedAt: number; endedAt: number | null; entries: Entry[];
+  kind?: 'checkin' | 'cardio'; cardio?: Cardio;
 }
 export interface WaterLog { id: string; day: string; at: number; ml: number }
 export interface WeightLog { id: string; day: string; kg: number }

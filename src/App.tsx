@@ -17,6 +17,7 @@ import Team from './screens/team/Team';
 import Settings from './screens/team/Settings';
 import Water from './screens/water/Water';
 import Diet from './screens/diet/Diet';
+import Shopping from './screens/diet/Shopping';
 import WrappedScreen from './screens/progress/Wrapped';
 import Survey from './screens/welcome/Survey';
 import YourPlan from './screens/welcome/YourPlan';
@@ -41,6 +42,7 @@ export function Shell({ survey = false }: { survey?: boolean }) {
         <Route path="/treino/sessao" element={<SessionScreen />} />
         <Route path="/treino/historico" element={<History />} />
         <Route path="/dieta" element={<Diet />} />
+        <Route path="/dieta/compras" element={<Shopping />} />
         <Route path="/agua" element={<Water />} />
         <Route path="/bem-vindo" element={<Survey />} />
         <Route path="/bem-vindo/plano" element={<YourPlan />} />

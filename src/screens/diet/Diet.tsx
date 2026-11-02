@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
 import { copyMeal, deleteFood, getSettings, logWater, saveSettings, undoLastWater } from '../../db/repo';
@@ -102,6 +102,7 @@ export default function Diet() {
         );
       })}
       <button className="btn ghost wide" onClick={() => setSheet('meals')}>Editar refeições</button>
+      <Link to="/dieta/compras" className="btn ghost wide">Lista de compras</Link>
 
       <Week foods={d.foods} today={today} goal={goal} />
 

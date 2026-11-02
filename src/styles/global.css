@@ -768,3 +768,10 @@ html { scroll-padding-bottom: calc(180px + var(--safe-bottom)); scroll-padding-t
 .scan-code { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: end; }
 .scan-code .btn { height: 48px; margin-bottom: 14px; }
 .scan-msg { margin: 0 0 8px; font-weight: 700; color: var(--crimson); font-size: 14px; }
+
+/* Lista de compras */
+.shop-list label { flex: 1; display: flex; align-items: center; gap: 12px; min-height: 36px; }
+.shop-list input[type="checkbox"] { width: 22px; height: 22px; flex: none; accent-color: var(--crimson); }
+.shop-list li span { display: grid; }
+.shop-list li.done b { text-decoration: line-through; color: var(--muted); }
+.shopping .foods li > b.num { min-width: 1.5ch; text-align: center; }

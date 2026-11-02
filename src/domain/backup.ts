@@ -45,6 +45,7 @@ const profileOk = (p: unknown) => p === null || (isObj(p) && oneOf(p.goal, ['mas
 const entryOk = (e: unknown) => isObj(e) && str(e.exerciseId) && Array.isArray(e.sets) && e.sets.every(setOk) && (!('group' in e) || str(e.group));
 const cardioOk = (c: unknown) => isObj(c) && oneOf(c.type, CARDIO) && num(c.min) && numOrNull(c.km);
 const macrosOk = (m: unknown) => isObj(m) && [m.kcal, m.p, m.c, m.f].every(x => num(x) && (x as number) >= 0);
+const shoppingOk = (v: unknown) => Array.isArray(v) && v.every(i => isObj(i) && str(i.id) && str(i.name) && str(i.qty) && typeof i.done === 'boolean');
 /** Campos ausentes viram padrão em getSettings; presentes precisam ter o tipo certo. */
 const settingsOk = (v: unknown) => isObj(v)
   && (!('heightCm' in v) || numOrNull(v.heightCm)) && (!('waterGoalMl' in v) || numOrNull(v.waterGoalMl))
@@ -63,7 +64,7 @@ const ROW: Record<Table, (r: Record<string, unknown>) => boolean> = {
     && (!('kind' in r) || oneOf(r.kind, ['checkin', 'cardio'])) && (r.kind !== 'cardio' || cardioOk(r.cardio)),
   water: r => str(r.id) && str(r.day) && num(r.ml),
   weights: r => str(r.id) && str(r.day) && num(r.kg),
-  kv: r => str(r.key) && (r.key !== 'settings' || settingsOk(r.value)),
+  kv: r => str(r.key) && (r.key !== 'settings' || settingsOk(r.value)) && (r.key !== 'shopping' || shoppingOk(r.value)),
   photos: r => str(r.id) && str(r.day) && str(r.data) && (r.data as string).startsWith('data:'),
   measures: r => str(r.id) && str(r.day) && oneOf(r.part, MEASURE_PARTS) && num(r.cm) && (r.cm as number) > 0,
   foods: r => str(r.id) && str(r.day) && num(r.at) && str(r.meal) && str(r.name) && str(r.qty) && macrosOk(r),

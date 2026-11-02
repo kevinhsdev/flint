@@ -6,6 +6,7 @@ import { makeSeed } from '../domain/seed';
 import { lastEntryFor } from '../domain/routine';
 import { suggestOverload } from '../domain/strength';
 import { generatePlan } from '../domain/plan';
+import type { ShopItem } from '../domain/shopping';
 import type { Challenge, Entry, Exercise, Food, MeasurePart, SavedMeal, Profile, Session, Settings, Template } from '../domain/types';
 
 export const uid = () => crypto.randomUUID();
@@ -20,6 +21,12 @@ export async function getSettings(): Promise<Settings> {
 export async function saveSettings(p: Partial<Settings>) {
   await db.kv.put({ key: 'settings', value: { ...(await getSettings()), ...p } });
 }
+
+export async function getShopping(): Promise<ShopItem[]> {
+  const v = (await db.kv.get('shopping'))?.value;
+  return Array.isArray(v) ? v : [];
+}
+export const saveShopping = (items: ShopItem[]) => db.kv.put({ key: 'shopping', value: items });
 
 /** Carga-alvo de um exercício (previsão de meta); null remove. */
 export async function setTarget(exerciseId: string, kg: number | null) {
